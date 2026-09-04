@@ -112,6 +112,7 @@ html{
   -webkit-text-size-adjust:100%;
 }
 body{
+  overflow-x:hidden;
   background:var(--bg);color:var(--label);
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,system-ui,sans-serif;
   font-size:17px;line-height:1.29;letter-spacing:-.01em;
@@ -177,11 +178,13 @@ body.resting #app{padding-bottom:calc(250px + var(--sab))}
 .hdr .sub{color:var(--label-2);font-size:15px;letter-spacing:-.006em;margin-top:4px}
 
 .iconbtn{
+
   width:36px;height:36px;border-radius:50%;flex:none;
   background:var(--surface);color:var(--label);
   display:flex;align-items:center;justify-content:center;font-size:18px;
   transition:background var(--fast),transform var(--fast);
 }
+.iconbtn::before{content:"";position:absolute;min-width:44px;min-height:44px;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1}
 .iconbtn:active{background:var(--surface-2);transform:scale(.92)}
 .iconbtn.on-ss{background:var(--acc-soft);color:var(--acc)}
 
@@ -216,7 +219,7 @@ h4.sec{
 
 .lrow{
   display:flex;align-items:center;gap:12px;width:100%;text-align:left;
-  padding:11px 14px;min-height:46px;position:relative;color:var(--label);
+  padding:11px 14px;min-height:46px;color:var(--label);
   background:none;
 }
 /* hairline starts after the icon rail so the list reads as one object */
@@ -293,7 +296,7 @@ h4.sec{
 #tabbar button.start{margin-top:-24px}
 #tabbar button.start .cir{
   width:52px;height:52px;border-radius:50%;background:var(--acc);color:var(--on-acc);
-  display:flex;align-items:center;justify-content:center;position:relative;
+  display:flex;align-items:center;justify-content:center;
   box-shadow:0 6px 18px -4px color-mix(in srgb,var(--acc) 55%,transparent);
   transition:transform var(--fast) var(--ease);
 }
@@ -387,7 +390,7 @@ h4.sec{
 }
 
 /* --- search field --- */
-.searchf{position:relative;display:flex;align-items:center}
+.searchf{display:flex;align-items:center}
 .searchf .lead{
   position:absolute;left:11px;font-size:16px;color:var(--label-3);
   pointer-events:none;--icon-stroke:2.1;z-index:1;
@@ -431,7 +434,7 @@ h4.sec{
    box and overflowed the track. A flex container leaves abspos children on the
    padding box, which is what the thumb needs. */
 .seg{
-  position:relative;display:flex;
+  display:flex;
   background:var(--surface-3);border-radius:9px;padding:2px;isolation:isolate;
 }
 .seg>button{flex:1 1 0;min-width:0}
@@ -446,7 +449,7 @@ h4.sec{
 }
 :root[data-theme="light"] .seg-sel{background:#fff}
 .seg button{
-  position:relative;z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
+  z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
   justify-content:center;gap:5px;min-height:30px;transition:opacity var(--fast);
 }
@@ -472,13 +475,17 @@ h4.sec{
 .stp-l{font-size:13px;color:var(--label-2);text-align:center}
 .stp{
   display:flex;align-items:center;background:var(--surface-2);
-  border-radius:10px;overflow:hidden;min-width:0;
+  border-radius:10px;min-width:0;
 }
 .stp button{
+
   width:40px;height:44px;flex:none;color:var(--label);font-size:16px;
   display:flex;align-items:center;justify-content:center;
   transition:background var(--fast);--icon-stroke:2.2;
 }
+.stp button::before{content:"";position:absolute;min-width:44px;min-height:44px;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1}
+.stp button:first-child{border-radius:10px 0 0 10px}
+.stp button:last-child{border-radius:0 10px 10px 0}
 .stp button:active{background:var(--surface-3)}
 .stp .val{
   flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:3px;padding:0 2px;
@@ -492,7 +499,7 @@ h4.sec{
 .stp .num::-webkit-inner-spin-button{display:none}
 
 /* --- slider --- */
-.sld{position:relative;height:32px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+.sld{height:32px;display:flex;align-items:center;cursor:pointer;touch-action:none}
 .sld-track{
   position:absolute;left:0;right:0;height:6px;border-radius:99px;
   background:var(--surface-3);overflow:hidden;
@@ -508,11 +515,13 @@ h4.sec{
 
 /* --- checkbox --- */
 .chk,.ck{
+
   width:30px;height:30px;border-radius:50%;flex:none;
   display:flex;align-items:center;justify-content:center;
   background:none;box-shadow:inset 0 0 0 1.8px var(--label-4);color:transparent;
   transition:background var(--fast),box-shadow var(--fast),color var(--fast),transform var(--fast);
 }
+.chk::before,.ck::before{content:"";position:absolute;min-width:44px;min-height:44px;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1}
 .chk .icn{font-size:16px;--icon-stroke:2.6}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
 .chk:active,.ck:active{transform:scale(.9)}
@@ -526,7 +535,7 @@ h4.sec{
 /* ------------------------------------------------------------- workout --- */
 .wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
-.exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
+.exmedia{border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
   position:absolute;bottom:9px;display:inline-flex;align-items:center;gap:4px;
@@ -575,7 +584,7 @@ h4.sec{
 .setrow.eff3 .stp.eff,.sethead.eff3 .eff-sp{flex:.85}
 .setrow.eff3 .stp button{width:23px}
 .setrow.eff3 .stp.eff button{width:20px}
-.setrow.eff3 .stp .num{font-size:14px}
+.setrow.eff3 .stp .num{font-size:16px}
 .setrow.done .n{background:var(--acc);color:var(--on-acc)}
 .setrow.done{opacity:.45}
 /* why the next target is what it is (issue #17) */
@@ -588,11 +597,13 @@ h4.sec{
 
 /* start a timed set (issue #16) — sits where you'd otherwise reach for the checkbox */
 .setrow .setgo{
+
   width:30px;height:30px;border-radius:50%;flex:none;
   display:flex;align-items:center;justify-content:center;
   background:var(--surface-2);color:var(--acc);font-size:14px;
   transition:background var(--fast),opacity var(--fast);
 }
+.setrow .setgo::before{content:"";position:absolute;min-width:44px;min-height:44px;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1}
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
 /* exercise-config sheet: three steppers side by side on narrow phones */
@@ -723,7 +734,7 @@ h4.sec{
 /* --------------------------------------------------------------- charts -- */
 .chart{width:100%;overflow:hidden}
 .chart svg{display:block;width:100%;height:auto}
-.chart-i{position:relative;touch-action:pan-y}
+.chart-i{touch-action:pan-y}
 /* left/top are written by LineChart after measuring the label, so it can never be
    pushed under the `.chart` clip at either edge — hence no offset here. */
 .ctip{
@@ -738,7 +749,8 @@ h4.sec{
 .hm-wrap::-webkit-scrollbar{display:none}
 .hm-months{display:flex;margin-left:28px;margin-bottom:5px}
 .hm-months span{flex:none;width:14px;font-size:11px;color:var(--label-3);white-space:nowrap;overflow:visible}
-.hm-body{display:flex}
+.hm-body{
+  display:flex}
 .hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px}
 .hm-days span{height:11px;font-size:10px;color:var(--label-2);line-height:11px}
 .hm-grid{display:flex;gap:3px}
@@ -852,7 +864,8 @@ h4.sec{
 
 /* --- accent swatches --- */
 .swatches{display:flex;gap:12px;flex-wrap:wrap}
-.swatch{width:32px;height:32px;border-radius:50%;flex:none;position:relative;transition:transform var(--fast)}
+.swatch{width:32px;height:32px;border-radius:50%;flex:none;transition:transform var(--fast)}
+.swatch::before{content:"";position:absolute;min-width:44px;min-height:44px;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1}
 .swatch:active{transform:scale(.9)}
 .swatch.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--label)}
 
@@ -890,14 +903,14 @@ h4.sec{
 /* --------------------------------------------------- desktop (≥1000px) --- */
 .cols{display:block}
 @media (min-width:1000px){
-  #app{max-width:1080px;padding-top:32px}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  #app{max-width:560px;padding-top:32px;margin:0 auto}
+
   .cols>*{min-width:0}
-  #app .list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
   #modal-root .list,.narrow .list{display:flex;flex-direction:column}
   .narrow{max-width:640px;margin:0 auto}
   .tiles{grid-template-columns:repeat(4,1fr)}
-  .cols .tiles{grid-template-columns:1fr 1fr}
+
   #tabbar{
     left:50%;right:auto;bottom:16px;transform:translateX(-50%);width:520px;
     border:var(--hair) solid var(--sep-op);border-radius:var(--r-xl);
