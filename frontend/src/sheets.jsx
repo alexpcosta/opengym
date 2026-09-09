@@ -482,7 +482,7 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit }) {
   </>
 }
 
-function ExConfig({ ex, existing, onSave, onDelete, close, routine }) {
+function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine }) {
   const st = useStore(s => s.S)
   const cardio = isCardio(ex.id)
   const [c, setC] = useState(existing || defaultConfig(ex.id))
@@ -541,10 +541,11 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine }) {
     <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} />
     <Button variant="primary" onClick={save}>{existing ? t('Save') : t('Add to routine')}</Button>
     {ex.custom && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
+    {onReplace && <><div style={{ height: 8 }} /><Button icon="shuffle" onClick={() => { close(); exercisePicker(next => exConfigSheet(next, null, cfg => onReplace(next, cfg), null, routine)) }}>{t('Replace exercise')}</Button></>}
     {onDelete && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { close(); onDelete() }}>{t('Remove from routine')}</Button></>}
   </>
 }
-export const exConfigSheet = (ex, existing, onSave, onDelete, routine) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} onSave={onSave} onDelete={onDelete} routine={routine} close={close} />)
+export const exConfigSheet = (ex, existing, onSave, onDelete, routine, onReplace) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} close={close} />)
 
 /* ============================ glyph picker ============================ */
 // Grouped by what the glyph means for a training day, so picking one is a scan
