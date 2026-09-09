@@ -37,7 +37,7 @@ export function parseCSV(text) {
     if (quoted) {
       if (c === '"') { if (s[i + 1] === '"') { field += '"'; i++ } else quoted = false }
       else field += c
-    } else if (c === '"') quoted = true
+    } else if (c === '"' && field === '') quoted = true
     else if (c === ',') { row.push(field); field = '' }
     else if (c === '\n' || c === '\r') {
       if (c === '\r' && s[i + 1] === '\n') i++
