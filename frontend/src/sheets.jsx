@@ -17,6 +17,7 @@ import BodyMap from './components/BodyMap.jsx'
 import { loadOfWorkouts } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-share.js'
+import { encryptPlan, decryptPlan, isEncryptedPlan } from './lib/plan-crypto.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC } from './lib/progression.js'
 import { MOBILE, shareExport } from './lib/mobile.js'
@@ -579,23 +580,40 @@ function PlanTools({ close }) {
   const fileRef = useRef(null)
   const hasRoutines = (st.routines || []).some(r => r.ex && r.ex.length)
 
+  // Download a string as a file (or hand it to the native share sheet on mobile).
+  const deliver = async (text, name, type = 'application/octet-stream') => {
+    if (MOBILE) { try { await shareExport(text, name) } catch (e) { /* dismissed */ } return true }
+    const blob = new Blob([text], { type })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
+    return true
+  }
+
   const exportFile = async () => {
     const bundle = buildPlanBundle(st, user?.name ? t('{0}’s plan', user.name) : '')
     const json = JSON.stringify(bundle, null, 2)
     const name = 'opengym-plan-' + todayISO() + '.json'
-    if (MOBILE) { try { await shareExport(json, name) } catch (e) { /* dismissed */ } close(); return }
-    const blob = new Blob([json], { type: 'application/json' })
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
+    await deliver(json, name, 'application/json')
     close(); toast(t('Plan file saved — send it to a friend'))
   }
+
   const pickFile = ev => {
     const f = ev.target.files[0]; ev.target.value = ''; if (!f) return
     const rd = new FileReader()
-    rd.onload = () => {
-      try { const bundle = parsePlan(rd.result); close(); planImportSheet(bundle) }
+    rd.onload = () => readPlanFile(String(rd.result), f.name)
+    rd.readAsText(f)
+  }
+
+  // Route an imported file: plain JSON parses straight through; a protected file first
+  // asks for its password (and is decrypted) before parsePlan is ever called.
+  const readPlanFile = (text, name) => {
+    let data
+    try { data = JSON.parse(text) }
+    catch (e) { toast(t('Import failed: {0}', t('That isn’t an openGym plan file'))); return }
+    if (isEncryptedPlan(data)) { close(); unprotectedPlanSheet(data, name) }
+    else {
+      try { const bundle = parsePlan(text); close(); planImportSheet(bundle) }
       catch (e) { toast(t('Import failed: {0}', e.message)) }
     }
-    rd.readAsText(f)
   }
 
   return <>
@@ -603,6 +621,9 @@ function PlanTools({ close }) {
     <div className="muted small" style={{ marginBottom: 16 }}>{t('Send your routines to a friend, or put your week on paper.')}</div>
     <Button variant="primary" icon="upload" onClick={exportFile} disabled={!hasRoutines}>{t('Export plan file')}</Button>
     <div className="dim small" style={{ margin: '7px 2px 0', lineHeight: 1.4 }}>{t('A small file a friend imports into their own openGym — routines only, none of your workouts or weigh-ins.')}</div>
+    <div style={{ height: 12 }} />
+    <Button variant="tinted" icon="lock" onClick={() => protectedExportSheet(buildPlanBundle(st, user?.name ? t('{0}’s plan', user.name) : ''))} disabled={!hasRoutines}>{t('Export protected plan')}</Button>
+    <div className="dim small" style={{ margin: '7px 2px 0', lineHeight: 1.4 }}>{t('Encrypts the same plan with a password (AES-256-GCM) before it leaves your device — the password is never saved in the file.')}</div>
     {!MOBILE && <>
       <div style={{ height: 12 }} />
       <Button variant="tinted" icon="download" onClick={() => { close(); printPlan(st, user?.name || '') }} disabled={!hasRoutines}>{t('Print / Save as PDF')}</Button>
@@ -611,11 +632,100 @@ function PlanTools({ close }) {
     {!hasRoutines && <div className="dim small" style={{ margin: '12px 2px 0' }}>{t('Add an exercise to a routine first — an empty plan has nothing to share.')}</div>}
     <h4 className="sec">{t('Got a plan from a friend?')}</h4>
     <Button variant="ghost" icon="folder" onClick={() => fileRef.current?.click()}>{t('Import a plan file')}</Button>
-    <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
+    <input ref={fileRef} type="file" accept=".json,.opengym,.ogp,application/json" onChange={pickFile} hidden />
   </>
 }
-
 export const planImportSheet = bundle => ui().openSheet(close => <PlanImport bundle={bundle} close={close} />)
+
+/* ==================== password-protected plan export / import ==================== */
+
+const MIN_PASSWORD_LEN = 8
+
+// Export: collect a password, confirm it, encrypt the bundle, download a `.opengym` file.
+function ProtectedExport({ bundle, close }) {
+  const [pw, setPw] = useState('')
+  const [pw2, setPw2] = useState('')
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const doExport = async () => {
+    if (busy) return
+    if (!pw) { setErr(t('Enter a password')); return }
+    if (pw.length < MIN_PASSWORD_LEN) { setErr(t('Use at least {0} characters', MIN_PASSWORD_LEN)); return }
+    if (pw !== pw2) { setErr(t('Passwords don’t match')); return }
+    setErr(''); setBusy(true)
+    try {
+      const json = JSON.stringify(bundle)
+      // Encrypt entirely client-side: buildPlanBundle → JSON → encrypt → download.
+      const encrypted = await encryptPlan(json, pw)
+      const name = 'opengym-plan-' + todayISO() + '.opengym'
+      const text = JSON.stringify(encrypted, null, 2)
+      if (MOBILE) { try { await shareExport(text, name) } catch (e) { /* dismissed */ } }
+      else {
+        const blob = new Blob([text], { type: 'application/octet-stream' })
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
+      }
+      close(); toast(t('Protected plan saved — send the file and the password separately'))
+    } catch (e) {
+      setErr(t('Could not encrypt the plan'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return <>
+    <h3>{t('Protect your plan')}</h3>
+    <div className="muted small" style={{ marginBottom: 14 }}>{t('Encrypt this plan with a password. Anyone who imports the file will need the same password to open it.')}</div>
+    <input className="input" type="password" autoFocus placeholder={t('Password')} value={pw} onChange={e => { setPw(e.target.value); setErr('') }} />
+    <input className="input" type="password" placeholder={t('Confirm password')} value={pw2} onChange={e => { setPw2(e.target.value); setErr('') }} />
+    {err && <div className="small" style={{ color: 'var(--red)', margin: '8px 2px 0' }}>{err}</div>}
+    <div className="dim small" style={{ margin: '10px 2px 0', lineHeight: 1.4 }}>{t('Encryption happens entirely on this device — the password is never stored or sent anywhere.')}</div>
+    <div style={{ height: 14 }} />
+    <Button variant="primary" icon="lock" onClick={doExport} disabled={busy}>{busy ? t('Encrypting…') : t('Export protected plan')}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+  </>
+}
+const protectedExportSheet = bundle => ui().openSheet(close => <ProtectedExport bundle={bundle} close={close} />, { kind: 'center' })
+
+// Import: unlock a protected file with its password, then hand the plaintext to parsePlan.
+function ProtectedUnlock({ data, fileName, close }) {
+  const [pw, setPw] = useState('')
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const unlock = async () => {
+    if (busy) return
+    if (!pw) { setErr(t('Enter a password')); return }
+    setErr(''); setBusy(true)
+    try {
+      const json = await decryptPlan(data, pw)
+      // ciphertext → decrypt → JSON → parsePlan → import sheet, never parsePlan first.
+      const bundle = parsePlan(json)
+      close(); planImportSheet(bundle)
+    } catch (e) {
+      // One generic message either way — never reveal whether it was the password or a
+      // corrupted file, so an attacker learns nothing.
+      setErr(t('Incorrect password or corrupted plan.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return <>
+    <h3>{t('Protected plan')}</h3>
+    <div className="muted small" style={{ marginBottom: 14 }}>{fileName ? t('“{0}” is password-protected.', fileName) : t('This plan file is password-protected.')}</div>
+    <input className="input" type="password" autoFocus placeholder={t('Enter password')} value={pw}
+      onChange={e => { setPw(e.target.value); setErr('') }}
+      onKeyDown={e => { if (e.key === 'Enter') unlock() }} />
+    {err && <div className="small" style={{ color: 'var(--red)', margin: '8px 2px 0' }}>{err}</div>}
+    <div style={{ height: 14 }} />
+    <Button variant="primary" icon="lock" onClick={unlock} disabled={busy}>{busy ? t('Unlocking…') : t('Unlock')}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+  </>
+}
+const unprotectedPlanSheet = (data, fileName) => ui().openSheet(close => <ProtectedUnlock data={data} fileName={fileName} close={close} />, { kind: 'center' })
 
 function PlanImport({ bundle, close }) {
   const [schedule, setSchedule] = useState(false)
