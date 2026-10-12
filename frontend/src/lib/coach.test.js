@@ -47,6 +47,7 @@ describe('gating', () => {
 
   it('is on in the demo build, which fakes the provider locally', () => {
     expect(coachAvailable(null, null, { demo: true })).toBe(true)
+    expect(coachAvailable(null, null, { demo: true, mobile: true })).toBe(true)
   })
   it('treats an older consent version as no consent', () => {
     expect(hasConsent(state())).toBe(true)

@@ -51,6 +51,7 @@ export function useCoachStatus(active = true) {
     }
   }, [])
 
+  const running = !!state.job
   useEffect(() => {
     if (!active) return
     let stopped = false
@@ -61,7 +62,9 @@ export function useCoachStatus(active = true) {
     }
     tick()
     return () => { stopped = true; clearTimeout(timer.current) }
-  }, [active, refresh])
+  // A review requested from an idle screen must replace its 60s timer immediately.
+  // Depend on the transition, not the job object returned by each poll.
+  }, [active, refresh, running])
 
   return { ...state, refresh }
 }

@@ -1,5 +1,8 @@
 # Building the mobile app (iOS / Android)
 
+For iOS-only packaging, a clearly labelled simulated Coach preview, media-license controls,
+and archive preflight, see [iOS development and Coach preview](IOS_PREVIEW.md).
+
 openGym ships in two flavors from the same codebase:
 
 | | **Self-hosted** (this repo's default) | **Mobile app** (`VITE_MOBILE=1`) |

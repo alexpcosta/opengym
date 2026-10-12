@@ -707,4 +707,9 @@ export default {
   '{0}: rep-range floor': '{0}: tekrar aralığı alt sınırı',
   '{0}: reps': '{0}: tekrar',
   '{0}: sets': '{0}: set',
+  "Preview — example data and simulated Coach. No data is sent to an AI provider.": "Önizleme — örnek veriler ve simüle edilen Koç. AI sağlayıcısına veri gönderilmez.",
+  "Example data stays on this phone. The Coach uses simulated responses.": "Örnek veriler bu telefonda kalır. Koç, simüle edilen yanıtlar kullanır.",
+  "Exercise media has a separate license.": "Egzersiz görselleri ve animasyonları ayrı lisanslıdır.",
+  "This preview uses simulated responses on this device. No training data is sent to an AI provider.": "Bu önizleme cihazda simüle edilen yanıtlar kullanır. AI sağlayıcısına antrenman verisi gönderilmez.",
+  "Try the Coach with example responses. Review, apply and undo a proposal before connecting a real AI provider.": "Koçu örnek yanıtlarla dene. Gerçek AI sağlayıcısı bağlamadan önce bir öneriyi incele, uygula ve geri al.",
 }

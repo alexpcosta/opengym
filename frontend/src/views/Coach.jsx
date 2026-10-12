@@ -162,8 +162,9 @@ function ConsentCard({ onDone }) {
   const open = () => openSheet(close => <>
     <h3>{t('Before the Coach starts')}</h3>
     <div className="muted small" style={{ lineHeight: 1.5, marginBottom: 12 }}>
-      {t('When you ask for a plan or a review, this instance sends the following to {0}, running on this server under the instance owner’s account.',
-        info?.providerLabel || config?.coach?.providerLabel || t('the configured AI provider'))}
+      {DEMO ? t('This preview uses simulated responses on this device. No training data is sent to an AI provider.') :
+        t('When you ask for a plan or a review, this instance sends the following to {0}, running on this server under the instance owner’s account.',
+          info?.providerLabel || config?.coach?.providerLabel || t('the configured AI provider'))}
     </div>
     <div className="sect-b">
       {(info?.categories || Object.keys(CATEGORY_TEXT)).map(k => {
@@ -192,7 +193,8 @@ function ConsentCard({ onDone }) {
       <div className="big" style={{ fontSize: 20 }}>{t('Meet the Coach')}</div>
     </div>
     <div className="muted small" style={{ marginBottom: 12, lineHeight: 1.5 }}>
-      {t('An AI coach that can design your plan and adjust it from what you actually log. It runs on this server, it never changes anything without your say-so, and it is off until you turn it on.')}
+      {DEMO ? t('Try the Coach with example responses. Review, apply and undo a proposal before connecting a real AI provider.') :
+        t('An AI coach that can design your plan and adjust it from what you actually log. It runs on this server, it never changes anything without your say-so, and it is off until you turn it on.')}
     </div>
     <Button variant="primary" icon="sparkles" onClick={open}>{t('See what it would use')}</Button>
   </div>

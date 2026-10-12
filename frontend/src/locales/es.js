@@ -707,4 +707,9 @@ export default {
   '{0}: rep-range floor': '{0}: mínimo del rango de repeticiones',
   '{0}: reps': '{0}: repeticiones',
   '{0}: sets': '{0}: series',
+  "Preview — example data and simulated Coach. No data is sent to an AI provider.": "Preview — example data and simulated Coach. No data is sent to an AI provider.",
+  "Example data stays on this phone. The Coach uses simulated responses.": "Example data stays on this phone. The Coach uses simulated responses.",
+  "Exercise media has a separate license.": "Exercise media has a separate license.",
+  "This preview uses simulated responses on this device. No training data is sent to an AI provider.": "This preview uses simulated responses on this device. No training data is sent to an AI provider.",
+  "Try the Coach with example responses. Review, apply and undo a proposal before connecting a real AI provider.": "Try the Coach with example responses. Review, apply and undo a proposal before connecting a real AI provider.",
 }

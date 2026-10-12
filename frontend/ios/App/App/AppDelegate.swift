@@ -1,7 +1,7 @@
 import UIKit
 import Capacitor
 
-@UIApplicationMain
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
@@ -46,4 +46,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
+}
+
+// UIKit scene lifecycle is required by recent iOS SDKs. Main.storyboard still creates the
+// Capacitor bridge; URL and universal-link events now arrive on its scene delegate.
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
+        forward(connectionOptions.urlContexts)
+        for activity in connectionOptions.userActivities {
+            _ = ApplicationDelegateProxy.shared.application(
+                UIApplication.shared, continue: activity, restorationHandler: { _ in })
+        }
+    }
+
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        forward(URLContexts)
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        _ = ApplicationDelegateProxy.shared.application(
+            UIApplication.shared, continue: userActivity, restorationHandler: { _ in })
+    }
+
+    private func forward(_ contexts: Set<UIOpenURLContext>) {
+        for context in contexts {
+            var options: [UIApplication.OpenURLOptionsKey: Any] = [.openInPlace: context.options.openInPlace]
+            if let source = context.options.sourceApplication { options[.sourceApplication] = source }
+            if let annotation = context.options.annotation { options[.annotation] = annotation }
+            _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: context.url, options: options)
+        }
+    }
 }

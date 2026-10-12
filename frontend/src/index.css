@@ -913,3 +913,14 @@ h4.sec{
   .exmedia img{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
+/* The native Coach preview is labelled on every route, including proposal review. */
+.native-preview-notice {
+  padding: 10px 14px;
+  margin: 0 0 14px;
+  border: 1px solid var(--sep);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--label-2);
+  font-size: 12px;
+  line-height: 1.5;
+}

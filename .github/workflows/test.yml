@@ -38,6 +38,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
         working-directory: frontend
+      # The plan-fingerprint test imports the server job module and its SDK adapter.
+      - run: npm ci
+        working-directory: api
       - run: npm test
         working-directory: frontend
       # A broken import or bad JSX fails the build long before any test covers it.
@@ -53,8 +56,9 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      # No dependencies to install: the Coach tests run on node:test and drive the in-repo
-      # fixture provider, so the whole job graph works without an AI account or a network.
+      # The fixture needs no AI account, but the adapter registry imports the provider SDK.
+      - run: npm ci
+        working-directory: api
       - run: npm test
         working-directory: api
       # The API's copy of the exercise catalogue is generated and committed. A dataset change

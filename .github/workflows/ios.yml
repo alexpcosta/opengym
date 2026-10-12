@@ -1,0 +1,42 @@
+name: iOS builds
+on:
+  pull_request:
+    paths: ['frontend/**', '.github/workflows/ios.yml']
+  push:
+    branches: [main]
+    paths: ['frontend/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build:ios:preview
+      - name: Preview must fail the archive preflight
+        run: |
+          if npm run check:ios:release; then
+            echo "Preview unexpectedly passed the archive preflight"
+            exit 1
+          fi
+      - name: Compile native preview
+        run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath build-ios CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=15.0 build
+      - run: npm run build:ios
+      - run: npm run check:ios:release
+      - name: Compile standalone Release
+        run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath build-ios CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=15.0 build

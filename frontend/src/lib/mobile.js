@@ -10,10 +10,11 @@
 // Like the demo build, MOBILE is replaced at build time, so all of this folds away in
 // web bundles; the Capacitor plugins are only ever imported behind it.
 import { t } from './i18n.js'
+import { DEMO } from './demo.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
 
-const FILE = 'opengym-state.json'
+const FILE = DEMO ? 'opengym-preview-state.json' : 'opengym-state.json'
 
 export async function nativeLoad() {
   try {

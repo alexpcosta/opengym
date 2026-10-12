@@ -5,7 +5,7 @@ import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
 
-const KEY = 'gym_state_v1'
+const KEY = DEMO && MOBILE ? 'gym_preview_state_v1' : 'gym_state_v1'
 export const DEF = {
   unit: 'kg', restSec: 90, sound: true, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
@@ -85,7 +85,7 @@ export const useStore = create((set, get) => {
 
   return {
     S: (() => { const s = loadState(); registerCustom(s.customEx); return s })(),
-    user: (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })(),
+    user: (() => { if (MOBILE || DEMO) return null; try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })(),
     ready: false,
     // Instance capabilities from GET /api/config. `config.coach` is present only when the
     // owner has both enabled the Coach and connected a provider — every Coach entry point in
@@ -165,6 +165,13 @@ export const useStore = create((set, get) => {
         } else if (hasData(S)) {
           nativeSave(S)   // first run after an update from a file-less version: seed the mirror
         }
+        // The native preview uses the same local provider as the web demo. Seed only its
+        // own storage namespace; never replace a standalone user's plan with example data.
+        if (DEMO && !localStorage.getItem(DEMO_SEEDED)) {
+          if (!hasData(get().S)) await get().resetDemo()
+          localStorage.setItem(DEMO_SEEDED, '1')
+        }
+        get().setUser(null)
         get().setGuest(true)
         syncReminder(get().S)
         set({ ready: true })

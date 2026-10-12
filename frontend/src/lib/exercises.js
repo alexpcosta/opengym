@@ -31,6 +31,9 @@ export const allExercises = st => [...(st.customEx || []), ...EXDB]
 // shipping ~140 MB of images into the deployment.
 const IMG_BASE = import.meta.env.VITE_IMG_BASE || 'img/'
 const GIF_BASE = import.meta.env.VITE_GIF_BASE || 'gif/'
+// iOS packaging can omit third-party media until the distributor has its own license.
+// The exercise catalogue and instruction text remain usable without images or GIFs.
+export const EXERCISE_MEDIA = import.meta.env.VITE_EXERCISE_MEDIA !== 'off'
 export const imgSrc = ex => IMG_BASE + ex.img
 export const gifSrc = ex => GIF_BASE + ex.gif
 

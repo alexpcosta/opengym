@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "build:mobile": "VITE_MOBILE=1 VITE_IMG_BASE=https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/images/ VITE_GIF_BASE=https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/videos/ vite build && cap sync",
+    "build:ios": "node scripts/build-ios.mjs",
+    "build:ios:preview": "node scripts/build-ios.mjs --preview",
+    "check:ios:release": "node scripts/check-ios-release.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -19,7 +22,7 @@
     "@capacitor/share": "^7.0.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.1",
+    "react-router-dom": "^7.18.4",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
