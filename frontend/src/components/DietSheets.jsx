@@ -85,7 +85,9 @@ function ProfileSheet({ close, lockedTargets }) {
         options={PACES.map(x => ({ value: x, label: t('{0} kg per week', fmtNum(x)) }))} />}
     </div>
 
-    {lockedTargets ? <div className="card small" style={{ borderColor: 'var(--acc)' }}>{t('Your trainer sets your targets. Your data still helps them adjust it.')}</div>
+    {lockedTargets ? <div className="card small" style={{ borderColor: 'var(--acc)' }}>{useStore.getState().user?.admin
+      ? t('Your targets come from the diet you wrote for yourself under Students → You.')
+      : t('Your trainer sets your targets. Your data still helps them adjust it.')}</div>
       : auto ? <div className="card">
         <div className="row between"><h2 style={{ margin: 0 }}>{t('Daily targets')}</h2>
           <button className="btn plain sm" onClick={() => setManual(manual ? null : { kcal: auto.kcal, p: auto.p, c: auto.c, f: auto.f })}>{manual ? t('Use calculated') : t('Adjust')}</button></div>

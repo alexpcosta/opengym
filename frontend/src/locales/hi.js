@@ -954,4 +954,9 @@ export default {
   '{0} has not filled in their data yet — enter it here.': '{0} ने अभी अपना डेटा नहीं भरा — यहाँ भरें।',
   '{0} alternative': '{0} विकल्प',
   '{0} alternatives': '{0} विकल्प',
+  'You': 'आप',
+  'Part of the plan you wrote for yourself — change it under Students → You.': 'आपके अपने लिए बनाए प्लान का हिस्सा — छात्र → आप में बदलें।',
+  'Your diet': 'आपकी डाइट',
+  'You wrote it for yourself — change it under Students → You.': 'आपने इसे अपने लिए बनाया — छात्र → आप में बदलें।',
+  'Your targets come from the diet you wrote for yourself under Students → You.': 'आपके लक्ष्य छात्र → आप में आपके अपने लिए बनाई डाइट से आते हैं।',
 }

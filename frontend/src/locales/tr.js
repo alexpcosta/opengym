@@ -954,4 +954,9 @@ export default {
   '{0} has not filled in their data yet — enter it here.': '{0} henüz verilerini doldurmadı — buraya gir.',
   '{0} alternative': '{0} alternatif',
   '{0} alternatives': '{0} alternatif',
+  'You': 'Sen',
+  'Part of the plan you wrote for yourself — change it under Students → You.': 'Kendin için yazdığın planın parçası — Öğrenciler → Sen bölümünden değiştir.',
+  'Your diet': 'Diyetin',
+  'You wrote it for yourself — change it under Students → You.': 'Kendin için yazdın — Öğrenciler → Sen bölümünden değiştir.',
+  'Your targets come from the diet you wrote for yourself under Students → You.': 'Hedeflerin, Öğrenciler → Sen bölümünde kendin için yazdığın diyetten gelir.',
 }

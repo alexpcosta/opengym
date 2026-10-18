@@ -25,7 +25,8 @@ const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 export function createTrainer({ json, readBody, readSession, requireAdmin, readState, sendPush, isAdmin, getDb, saveDb }) {
   const students = () => getDb().users.filter(u => !isAdmin(u) && !u.disabled);
   const admins = () => getDb().users.filter(u => isAdmin(u) && !u.disabled);
-  const findStudent = id => students().find(u => u.id === id) || null;
+  // A trainer can also write a plan and a diet for themselves: their own id resolves too.
+  const findStudent = (id, admin) => students().find(u => u.id === id) || (admin && id === admin.id ? admin : null);
   const langOf = uid => readState(uid)?.lang || 'en';
   const prefsOf = admin => ({ ...DEFAULT_PREFS, ...(admin.trainerPrefs || {}) });
   const todayOf = S => userNow(zoneOf(S))?.date || new Date().toISOString().slice(0, 10);
@@ -108,9 +109,12 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
   }
 
   /** Shared by plans and diets: version check, write, tell the student. */
+  const FILES = {
+    plan: [store.readPlan, store.writePlan],
+    diet: [store.readDiet, store.writeDiet]
+  };
   function sendVersioned(res, admin, u, kind, clean, baseVersion) {
-    const read = kind === 'plan' ? store.readPlan : store.readDiet;
-    const write = kind === 'plan' ? store.writePlan : store.writeDiet;
+    const [read, write] = FILES[kind];
     const existing = read(u.id);
     // Two admins editing the same student, or a stale tab: refuse rather than overwrite.
     if ((existing?.version || 0) !== (+baseVersion || 0)) {
@@ -124,13 +128,14 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     };
     write(u.id, rec);
     const lang = langOf(u.id);
-    const [title, body, url] = kind === 'plan' ? [msg(lang, 'planT'), msg(lang, 'planB'), '#/plan'] : [msg(lang, 'dietT'), msg(lang, 'dietB'), '#/diet'];
-    sendPush(u.id, { title, body, tag: 'trainer-' + kind, url }).catch(() => {});
+    const [title, body, url] = kind === 'plan' ? [msg(lang, 'planT'), msg(lang, 'planB'), '#/plan']
+      : [msg(lang, 'dietT'), msg(lang, 'dietB'), '#/diet'];
+    // Writing your own plan is not news to you.
+    if (u.id !== admin.id) sendPush(u.id, { title, body, tag: 'trainer-' + kind, url }).catch(() => {});
     json(res, 200, { version: rec.version, [kind]: planStatus(rec) });
   }
   function removeVersioned(res, admin, u, kind, empty) {
-    const read = kind === 'plan' ? store.readPlan : store.readDiet;
-    const write = kind === 'plan' ? store.writePlan : store.writeDiet;
+    const [read, write] = FILES[kind];
     const existing = read(u.id);
     if (!existing || existing.removed) return json(res, 200, { version: existing?.version || 0 });
     // A tombstone, not a delete: the student's device has to see a newer version to know it
@@ -144,8 +149,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     json(res, 200, { version: rec.version });
   }
   function ackVersioned(user, kind, version) {
-    const read = kind === 'plan' ? store.readPlan : store.readDiet;
-    const write = kind === 'plan' ? store.writePlan : store.writeDiet;
+    const [read, write] = FILES[kind];
     const rec = read(user.id);
     const v = Math.round(+version || 0);
     if (rec && v > (rec.ackedVersion || 0) && v <= rec.version) {
@@ -163,14 +167,15 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     /* ------------------------------ admin ------------------------------ */
     'GET /api/trainer/students': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
-      const list = students().map(u => {
+      // The trainer first, as "you": the same page writes their own plan and diet.
+      const list = [admin, ...students()].map(u => {
         const S = readState(u.id) || {};
         const today = todayOf(S);
         const w = S.workouts || [];
         const a7 = adherence(S, today, 7, effectiveRoutineId, isoMinus);
         const a28 = adherence(S, today, 28, effectiveRoutineId, isoMinus);
         return {
-          id: u.id, name: u.name, created: u.created || null,
+          id: u.id, name: u.name, created: u.created || null, self: u.id === admin.id,
           workouts: w.length, lastWorkout: w.length ? w[w.length - 1].d : null,
           lastSync: S._ts || null,
           hasPush: getDb().subs.some(s => s.userId === u.id),
@@ -188,7 +193,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     'GET /api/trainer/student': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
       const id = new URL(req.url, 'http://x').searchParams.get('id');
-      const u = findStudent(id);
+      const u = findStudent(id, admin);
       if (!u) return json(res, 404, { error: 'no such student' });
       const S = readState(u.id) || {};
       const plan = store.readPlan(u.id);
@@ -220,7 +225,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     'PUT /api/trainer/plan': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
       const body = await readBody(req);
-      const u = findStudent(body.id);
+      const u = findStudent(body.id, admin);
       if (!u) return json(res, 404, { error: 'no such student' });
       const v = validateTrainerPlan(body.plan);
       if (!v.ok) return json(res, 400, { error: v.errors.join('; '), errors: v.errors });
@@ -230,7 +235,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     'POST /api/trainer/plan/remove': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
       const body = await readBody(req);
-      const u = findStudent(body.id);
+      const u = findStudent(body.id, admin);
       if (!u) return json(res, 404, { error: 'no such student' });
       removeVersioned(res, admin, u, 'plan', { routines: [], week: {}, customEx: [] });
     },
@@ -238,7 +243,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     'PUT /api/trainer/diet': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
       const body = await readBody(req);
-      const u = findStudent(body.id);
+      const u = findStudent(body.id, admin);
       if (!u) return json(res, 404, { error: 'no such student' });
       const v = validateTrainerDiet(body.diet);
       if (!v.ok) return json(res, 400, { error: v.errors.join('; '), errors: v.errors });
@@ -248,7 +253,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     'POST /api/trainer/diet/remove': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
       const body = await readBody(req);
-      const u = findStudent(body.id);
+      const u = findStudent(body.id, admin);
       if (!u) return json(res, 404, { error: 'no such student' });
       removeVersioned(res, admin, u, 'diet', { targets: null, meals: [], calc: null });
     },
@@ -256,7 +261,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     // Another student's diet as a starting point ("copy diet from…").
     'GET /api/trainer/diet': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
-      const u = findStudent(new URL(req.url, 'http://x').searchParams.get('id'));
+      const u = findStudent(new URL(req.url, 'http://x').searchParams.get('id'), admin);
       if (!u) return json(res, 404, { error: 'no such student' });
       const rec = store.readDiet(u.id);
       json(res, 200, { diet: rec && !rec.removed ? { targets: rec.targets, meals: rec.meals || [], calc: rec.calc || null, note: rec.note || '' } : null });
@@ -339,7 +344,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     'GET /api/trainer/my-plan': async (req, res) => {
       const user = readSession(req);
       if (!user) return json(res, 401, { error: 'not signed in' });
-      json(res, 200, { plan: isAdmin(user) ? null : planForStudent(store.readPlan(user.id)) });
+      json(res, 200, { plan: planForStudent(store.readPlan(user.id)) });
     },
 
     'POST /api/trainer/my-plan/ack': async (req, res) => {
@@ -353,7 +358,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     'GET /api/trainer/my-diet': async (req, res) => {
       const user = readSession(req);
       if (!user) return json(res, 401, { error: 'not signed in' });
-      json(res, 200, { diet: isAdmin(user) ? null : dietForStudent(store.readDiet(user.id)) });
+      json(res, 200, { diet: dietForStudent(store.readDiet(user.id)) });
     },
 
     'POST /api/trainer/my-diet/ack': async (req, res) => {

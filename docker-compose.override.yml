@@ -1,0 +1,26 @@
+# Ajustes locais deste servidor: build a partir deste fork + exposição via Traefik.
+# Mesclado automaticamente com docker-compose.yml pelo `docker compose`.
+
+services:
+  api:
+    image: opengym-api:local      # build local deste fork (não usar a imagem upstream do ghcr)
+
+  web:
+    image: opengym-web:local
+    ports: !reset []              # sem porta no host: acesso só via Traefik (8080 já é do Traefik)
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.opengym.rule=Host(`opengym.nation.com.py`)"
+      - "traefik.http.routers.opengym.entrypoints=websecure"
+      - "traefik.http.routers.opengym.tls=true"
+      - "traefik.http.routers.opengym.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.opengym.service=opengym"
+      - "traefik.http.services.opengym.loadbalancer.server.port=80"
+
+networks:
+  proxy:
+    external: true

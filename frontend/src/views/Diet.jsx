@@ -30,6 +30,7 @@ function Bar({ label, value, target, color }) {
 // `menu`: the totals are a trainer's planned menu, not food eaten — the ring shows the menu's
 // calories and the line says how they compare to the target.
 export function DietSummary({ tot, tgt, onClick, menu }) {
+  const user = useStore(s => s.user)
   const left = tgt ? tgt.kcal - tot.kcal : null
   const v = tgt ? Math.min(1, tot.kcal / tgt.kcal) : 0
   const over = left != null && left < 0
@@ -47,7 +48,7 @@ export function DietSummary({ tot, tgt, onClick, menu }) {
     </div>
     <div className="small dim" style={{ marginTop: 10 }}>
       {menu ? (tgt ? t('The menu has {0} of the {1} kcal target.', r0(tot.kcal), r0(tgt.kcal)) : t('Set the targets to compare the menu with them.'))
-        : tgt ? t('{0} of {1} kcal eaten', r0(tot.kcal), r0(tgt.kcal)) + (tgt.by === 'trainer' ? ' · ' + t('targets from your trainer') : '')
+        : tgt ? t('{0} of {1} kcal eaten', r0(tot.kcal), r0(tgt.kcal)) + (tgt.by === 'trainer' && !user?.admin ? ' · ' + t('targets from your trainer') : '')
         : t('{0} kcal eaten — set your targets to see what is left.', r0(tot.kcal))}
     </div>
   </div>
@@ -55,6 +56,7 @@ export function DietSummary({ tot, tgt, onClick, menu }) {
 
 export default function Diet() {
   const S = useStore(s => s.S)
+  const user = useStore(s => s.user)
   const update = useStore(s => s.update)
   const toast = useUI(s => s.toast)
   const days = useDiet(s => s.days)
@@ -146,9 +148,9 @@ export default function Diet() {
     {dietLocked(S) && <div className="card row" style={{ gap: 10, borderColor: 'var(--acc)' }} onClick={() => update(s => { markDietSeen(s) })}>
       <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="clipboard" /></span>
       <div style={{ minWidth: 0 }}>
-        <div className="small" style={{ fontWeight: 600 }}>{t('Diet from {0}', S.diet.by || t('your trainer'))}</div>
+        <div className="small" style={{ fontWeight: 600 }}>{user?.admin ? t('Your diet') : t('Diet from {0}', S.diet.by || t('your trainer'))}</div>
         {S.diet.note ? <div className="small muted" style={{ whiteSpace: 'pre-wrap' }}>{S.diet.note}</div>
-          : <div className="small muted">{t('Your trainer sets your targets and menu.')}</div>}
+          : <div className="small muted">{user?.admin ? t('You wrote it for yourself — change it under Students → You.') : t('Your trainer sets your targets and menu.')}</div>}
       </div>
     </div>}
 

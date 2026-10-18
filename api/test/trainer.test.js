@@ -155,7 +155,25 @@ test('only admins reach the trainer routes, and students are everyone else', asy
   assert.equal((await h.call('GET /api/trainer/students', h.db.users[1])).code, 403);
   const r = await h.call('GET /api/trainer/students', h.db.users[0]);
   assert.equal(r.code, 200);
-  assert.deepEqual(r.body.students.map(s => s.id), ['stu']);
+  // The trainer comes first, as themselves; disabled profiles are left out.
+  assert.deepEqual(r.body.students.map(s => s.id), ['adm', 'stu']);
+  assert.equal(r.body.students[0].self, true);
+});
+
+test('a trainer can write a plan and a diet for themselves, without pushing to themselves', async () => {
+  const h = harness();
+  const adm = h.db.users[0];
+  const before = h.pushes.length;
+  const plan = await h.call('PUT /api/trainer/plan', adm, { body: { id: 'adm', baseVersion: store.readPlan('adm')?.version || 0, plan: PLAN } });
+  assert.equal(plan.code, 200, JSON.stringify(plan.body));
+  const diet = await h.call('PUT /api/trainer/diet', adm, { body: { id: 'adm', baseVersion: store.readDiet('adm')?.version || 0, diet: { targets: { kcal: 2400, p: 160, c: 260, f: 70 } } } });
+  assert.equal(diet.code, 200, JSON.stringify(diet.body));
+  assert.equal(h.pushes.length, before);
+  assert.equal((await h.call('GET /api/trainer/my-plan', adm)).body.plan.routines.length, 2);
+  assert.equal((await h.call('GET /api/trainer/my-diet', adm)).body.diet.targets.kcal, 2400);
+  // Another admin is still not a target.
+  h.db.users.push({ id: 'adm2', name: 'Other', admin: true });
+  assert.equal((await h.call('PUT /api/trainer/plan', adm, { body: { id: 'adm2', baseVersion: 0, plan: PLAN } })).code, 404);
 });
 
 test('sending a plan versions it, refuses stale edits and tells the student', async () => {
@@ -177,7 +195,7 @@ test('sending a plan versions it, refuses stale edits and tells the student', as
 
   await h.call('POST /api/trainer/my-plan/ack', stu, { body: { version: 1 } });
   const list = await h.call('GET /api/trainer/students', adm);
-  assert.equal(list.body.students[0].plan.acked, true);
+  assert.equal(list.body.students.find(s => s.id === 'stu').plan.acked, true);
 
   const rm = await h.call('POST /api/trainer/plan/remove', adm, { body: { id: 'stu' } });
   assert.equal(rm.body.version, 2);

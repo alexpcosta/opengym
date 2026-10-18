@@ -10,6 +10,7 @@ export default function RoutineEdit() {
   const { id } = useParams()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
+  const user = useStore(s => s.user)
   const r = S.routines.find(x => x.id === id)
   useEffect(() => { if (!r) nav('/plan') }, [!!r])
   if (!r) return null
@@ -19,7 +20,9 @@ export default function RoutineEdit() {
   return <RoutineEditor
     routine={r} unit={S.unit} body={S.body} back={() => nav('/plan')}
     readOnly={locked}
-    banner={locked ? t('{0} set this routine for you. You can train it any time — ask them if something needs changing.', S.trainer?.by || t('Your trainer')) : null}
+    banner={!locked ? null : user?.admin
+      ? t('Part of the plan you wrote for yourself — change it under Students → You.')
+      : t('{0} set this routine for you. You can train it any time — ask them if something needs changing.', S.trainer?.by || t('Your trainer'))}
     edit={fn => update(s => { fn(s.routines.find(x => x.id === id).ex) })}
     set={(k, v) => update(s => { s.routines.find(x => x.id === id)[k] = v })}
     remove={() => {

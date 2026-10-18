@@ -954,4 +954,9 @@ export default {
   '{0} has not filled in their data yet — enter it here.': '{0} 还没有填写资料 — 请在这里输入。',
   '{0} alternative': '{0} 个替代',
   '{0} alternatives': '{0} 个替代',
+  'You': '你',
+  'Part of the plan you wrote for yourself — change it under Students → You.': '这是你为自己制定的计划的一部分 — 请在“学员 → 你”中修改。',
+  'Your diet': '你的饮食',
+  'You wrote it for yourself — change it under Students → You.': '这是你为自己制定的 — 请在“学员 → 你”中修改。',
+  'Your targets come from the diet you wrote for yourself under Students → You.': '你的目标来自你在“学员 → 你”中为自己制定的饮食。',
 }

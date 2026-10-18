@@ -954,4 +954,9 @@ export default {
   '{0} has not filled in their data yet — enter it here.': '{0}님이 아직 정보를 입력하지 않았어요 — 여기에 입력하세요.',
   '{0} alternative': '대체 {0}개',
   '{0} alternatives': '대체 {0}개',
+  'You': '나',
+  'Part of the plan you wrote for yourself — change it under Students → You.': '내가 직접 만든 플랜의 일부예요 — 회원 → 나에서 수정하세요.',
+  'Your diet': '내 식단',
+  'You wrote it for yourself — change it under Students → You.': '내가 직접 만든 식단이에요 — 회원 → 나에서 수정하세요.',
+  'Your targets come from the diet you wrote for yourself under Students → You.': '목표는 회원 → 나에서 직접 만든 식단에서 가져와요.',
 }

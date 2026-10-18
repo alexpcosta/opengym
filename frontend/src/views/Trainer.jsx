@@ -118,7 +118,7 @@ export default function Trainer() {
     <div className="hdr">
       <button className="iconbtn" onClick={() => nav('/home')} aria-label={t('Home')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginLeft: 8 }}><h1 style={{ margin: 0 }}>{t('Students')}</h1>
-        <div className="sub">{students ? t(students.length === 1 ? '{0} student' : '{0} students', students.length) : t('Loading…')}</div></div>
+        <div className="sub">{students ? (n => t(n === 1 ? '{0} student' : '{0} students', n))(students.filter(s => !s.self).length) : t('Loading…')}</div></div>
       <button className="iconbtn" onClick={() => openSheet(() => <FoodsSheet />)} aria-label={t('Trainer foods')}><Icon name="flame" /></button>
       <button className="iconbtn" onClick={() => openSheet(close => <PrefsSheet close={close} />)} aria-label={t('Notifications')}><Icon name="bell" /></button>
       <button className="iconbtn" onClick={load} aria-label={t('Refresh')}><Icon name="reset" /></button>
@@ -134,7 +134,7 @@ export default function Trainer() {
       {(students || []).map(s => <div key={s.id} className="item" onClick={() => nav('/trainer/s/' + s.id)}>
         <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="personCircle" /></span>
         <div className="grow">
-          <div className="tt">{s.name}{s.unread > 0 && <span className="tag acc" style={{ marginLeft: 6 }}>{s.unread}</span>}</div>
+          <div className="tt">{s.self ? t('You') : s.name}{s.unread > 0 && <span className="tag acc" style={{ marginLeft: 6 }}>{s.unread}</span>}</div>
           <div className="ss">{[
             s.adherence7.planned ? t('{0} of {1} this week', s.adherence7.done, s.adherence7.planned) : t('{0} workouts', s.workouts),
             s.lastWorkout ? t('last {0}', fmtDate(s.lastWorkout)) : t('no workouts yet'),
@@ -148,7 +148,7 @@ export default function Trainer() {
         </div>
         <Icon name="chevronRight" className="chev" />
       </div>)}
-      {students && !students.length && <div className="empty">{t('No students yet. Everyone who signs up on this instance and is not an admin is a student.')}</div>}
+      {students && !students.some(s => !s.self) && <div className="empty">{t('No students yet. Everyone who signs up on this instance and is not an admin is a student.')}</div>}
     </div>
   </div>
 }

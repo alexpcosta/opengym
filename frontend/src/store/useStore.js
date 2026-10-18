@@ -4,7 +4,7 @@ import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
-import { applyTrainerPlan, applyTrainerDiet } from '../lib/trainer.js'
+import { applyTrainerPlan, applyTrainerDiet, markPlanSeen, markDietSeen } from '../lib/trainer.js'
 import { useDiet } from './useDiet.js'
 
 const KEY = 'gym_state_v1'
@@ -149,18 +149,19 @@ export const useStore = create((set, get) => {
     },
 
     // Trainer mode: fetch the plan a trainer wrote for this profile and apply it when it is
-    // newer than what this device has. Admins are trainers, not students — nothing to pull.
+    // newer than what this device has. A trainer can write one for themselves too — then
+    // there is no "your trainer updated" banner, they wrote it.
     // At most every few minutes unless forced (boot), since visibility changes are frequent.
     async pullTrainer(force = false) {
       const user = get().user
-      if (!user || user.admin) return
+      if (!user) return
       if (!force && Date.now() - trainerPulledAt < 5 * 60000) return
       trainerPulledAt = Date.now()
       try {
         const { plan } = await api('/api/trainer/my-plan')
         const cur = get().S.trainer
         if (plan && plan.version > (cur?.version || 0)) {
-          get().update(s => { applyTrainerPlan(s, plan) })
+          get().update(s => { applyTrainerPlan(s, plan); if (user.admin) markPlanSeen(s) })
         } else if (!plan && cur?.rids?.length) {
           // The server no longer has a plan for us at all (data reset): unlock rather than
           // keep routines nobody can edit.
@@ -172,7 +173,7 @@ export const useStore = create((set, get) => {
         // The diet travels the same way, and is applied the same way.
         const { diet } = await api('/api/trainer/my-diet')
         const curDiet = get().S.diet
-        if (diet && diet.version > (curDiet?.version || 0)) get().update(s => { applyTrainerDiet(s, diet) })
+        if (diet && diet.version > (curDiet?.version || 0)) get().update(s => { applyTrainerDiet(s, diet); if (user.admin) markDietSeen(s) })
         else if (!diet && curDiet && !curDiet.removed) get().update(s => { applyTrainerDiet(s, null) })
         if (diet && !diet.acked && diet.version === get().S.diet?.version) {
           api('/api/trainer/my-diet/ack', { method: 'POST', body: JSON.stringify({ version: diet.version }) }).catch(() => {})

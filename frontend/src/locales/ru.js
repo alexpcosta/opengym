@@ -954,4 +954,9 @@ export default {
   '{0} has not filled in their data yet — enter it here.': '{0} ещё не указал(а) свои данные — введи их здесь.',
   '{0} alternative': '{0} замена',
   '{0} alternatives': 'замен: {0}',
+  'You': 'Ты',
+  'Part of the plan you wrote for yourself — change it under Students → You.': 'Часть плана, который ты составил(а) для себя, — меняй его в разделе «Ученики → Ты».',
+  'Your diet': 'Твой рацион',
+  'You wrote it for yourself — change it under Students → You.': 'Ты составил(а) его для себя — меняй в разделе «Ученики → Ты».',
+  'Your targets come from the diet you wrote for yourself under Students → You.': 'Цели берутся из рациона, который ты составил(а) для себя в разделе «Ученики → Ты».',
 }

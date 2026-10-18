@@ -954,4 +954,9 @@ export default {
   '{0} has not filled in their data yet — enter it here.': '{0} ainda não preencheu os dados — introdu-los aqui.',
   '{0} alternative': '{0} alternativa',
   '{0} alternatives': '{0} alternativas',
+  'You': 'Tu',
+  'Part of the plan you wrote for yourself — change it under Students → You.': 'Faz parte do plano que escreveste para ti — altera-o em Alunos → Tu.',
+  'Your diet': 'A tua dieta',
+  'You wrote it for yourself — change it under Students → You.': 'Escreveste-a para ti — altera-a em Alunos → Tu.',
+  'Your targets come from the diet you wrote for yourself under Students → You.': 'As tuas metas vêm da dieta que escreveste para ti em Alunos → Tu.',
 }

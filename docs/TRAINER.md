@@ -14,6 +14,10 @@ Nothing here needs configuring. Trainer mode is there for whoever is listed in `
 Every profile that is not an admin is a student of every admin. There is no linking step and no
 invitation: one trainer, or a small team, running one instance. Disabled accounts drop out.
 
+You are on the list too, first, as **You**: the same page writes your own training plan and diet
+(menu, alternatives and all). It works like a student's, minus the notifications — nothing is
+pushed to you about your own plan.
+
 ## Training plans
 
 Settings → **Students** (or the card on Home) → pick a student → **Training**.
