@@ -17,7 +17,9 @@ import { effectiveRoutineId, userNow } from './lib/schedule.js';
 import { createTrainer } from './trainer/routes.js';
 import { startDaily, addDailyCheck } from './trainer/daily.js';
 import { dietCheck } from './trainer/diet-checks.js';
+import { suppCheck } from './trainer/supp-checks.js';
 import { dietRoutes } from './diet/routes.js';
+import { suppRoutes } from './supp/routes.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -557,7 +559,10 @@ const routes = {
   ...trainer.routes,
 
   /* ---------- food search + food diary ---------- */
-  ...dietRoutes({ json, readBody, readSession })
+  ...dietRoutes({ json, readBody, readSession }),
+
+  /* ---------- the student's supplement log ---------- */
+  ...suppRoutes({ json, readBody, readSession })
 };
 
 /* ---------- Coach: boot recovery, notifications, scheduled reviews ---------- */
@@ -577,6 +582,7 @@ coachJobs.setProposalHook((uid, pending) => {
 });
 startCadence({ users: () => db.users, userNow });
 addDailyCheck(dietCheck);
+addDailyCheck(suppCheck);
 startDaily({ students: trainer.students, admins: trainer.admins, prefsOf: trainer.prefsOf, langOf: trainer.langOf, readState, sendPush, notifyAdmins: trainer.notifyAdmins });
 
 http.createServer(async (req, res) => {

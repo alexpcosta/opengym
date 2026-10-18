@@ -32,6 +32,10 @@ const P = {
   timer: <><circle cx="12" cy="13.4" r="7.2" /><path d="M12 9.6v3.8h2.8M9.6 3.4h4.8" /></>,
   clock: <><circle cx="12" cy="12" r="8.2" /><path d="M12 7.4V12l3.1 1.9" /></>,
 
+  // A capsule on the diagonal with its seam — supplements. Drawn as two rounded ends so it
+  // never reads as the `pause` bars at tab-bar size.
+  capsule: <><rect x="2.1" y="8.1" width="19.8" height="7.8" rx="3.9" transform="rotate(-45 12 12)" /><path d="m9.2 9.2 5.6 5.6" /></>,
+
   /* ---- status / achievement ---- */
   trophy: <><path d="M7.6 4h8.8v4.6a4.4 4.4 0 0 1-8.8 0Z" /><path d="M7.6 5.6H4.9v1.5a3 3 0 0 0 2.9 3M16.4 5.6h2.7v1.5a3 3 0 0 1-2.9 3M12 13v3.4M8.6 20.4h6.8l-.7-4H9.3Z" /></>,
   medal: <><circle cx="12" cy="14.8" r="5.2" /><circle cx="12" cy="14.8" r="1.9" /><path d="M9.1 9.9 6.4 3.6M14.9 9.9l2.7-6.3" /></>,

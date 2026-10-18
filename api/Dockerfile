@@ -24,6 +24,7 @@ COPY coach/ ./coach/
 COPY lib/ ./lib/
 COPY trainer/ ./trainer/
 COPY diet/ ./diet/
+COPY supp/ ./supp/
 COPY food/ ./food/
 ENV NODE_ENV=production
 EXPOSE 3000

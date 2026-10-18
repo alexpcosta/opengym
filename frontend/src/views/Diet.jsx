@@ -10,6 +10,9 @@ import { sumEntries, toKg, entryNutrients } from '../lib/nutrition.js'
 import { toEntry, entryFood, loadTaco, localFood } from '../lib/food.js'
 import { mealsOf, mealName, targetsOf } from '../lib/diet.js'
 import { dietLocked, markDietSeen } from '../lib/trainer.js'
+import { suppsOf, dayStatus as suppDayStatus, weekdayOf } from '../lib/supp.js'
+import { useSupp } from '../store/useSupp.js'
+import { useNavigate } from 'react-router-dom'
 import { confirmSheet } from '../sheets.jsx'
 import { profileSheet, portionSheet, foodPickerSheet, MACRO_COLOR, Attribution } from '../components/DietSheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -50,6 +53,28 @@ export function DietSummary({ tot, tgt, onClick, menu }) {
       {menu ? (tgt ? t('The menu has {0} of the {1} kcal target.', r0(tot.kcal), r0(tgt.kcal)) : t('Set the targets to compare the menu with them.'))
         : tgt ? t('{0} of {1} kcal eaten', r0(tot.kcal), r0(tgt.kcal)) + (tgt.by === 'trainer' && !user?.admin ? ' · ' + t('targets from your trainer') : '')
         : t('{0} kcal eaten — set your targets to see what is left.', r0(tot.kcal))}
+    </div>
+  </div>
+}
+
+// A row through to the supplement list, when the student has one — the two belong together
+// and a tab of its own for three capsules a day would be too much furniture.
+function SuppRow() {
+  const nav = useNavigate()
+  const S = useStore(s => s.S)
+  const today = todayISO()
+  const day = useSupp(s => s.days[today])
+  const pull = useSupp(s => s.pull)
+  const items = suppsOf(S)
+  useEffect(() => { if (items) pull(today, today) }, [!!items])
+  if (!items) return null
+  const { due, taken, status } = suppDayStatus(items, day, weekdayOf(today))
+  return <div className="list" style={{ marginBottom: 12 }}>
+    <div className="item" onClick={() => nav('/supps')}>
+      <span className="lrow-i" style={{ background: status === 'ok' ? 'var(--acc)' : 'var(--teal)' }}><Icon name="capsule" /></span>
+      <div className="grow"><div className="tt">{t('Supplements')}</div>
+        <div className="ss">{status === 'rest' ? t('nothing due today') : t('{0} of {1} doses', taken, due)}</div></div>
+      <Icon name="chevronRight" className="chev" />
     </div>
   </div>
 }
@@ -164,6 +189,7 @@ export default function Diet() {
     </div>}
 
     <DietSummary tot={tot} tgt={tgt} />
+    {date === today && <SuppRow />}
     {date !== today && <Button size="sm" onClick={() => setDate(today)}>{t('Back to today')}</Button>}
 
     {meals.map(m => {

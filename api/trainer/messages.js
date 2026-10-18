@@ -14,6 +14,9 @@ const M = {
     dietMissingT: '{name} logged no food today', dietMissingB: 'The food diary is empty for today.',
     dietOffT: '{name} was off target today', dietOffB: '{kcal} / {target} kcal · protein {p} / {pt} g',
     summaryT: 'Diet today', summaryB: '{n} students: {ok} on target · {off} off · {none} not logged',
+    suppT: 'Your trainer updated your supplements', suppB: 'Open the app to see what to take and when.',
+    suppNoneT: '{name} marked no supplements today', suppNoneB: '{due} doses were due and none were ticked.',
+    suppPartT: '{name} missed a supplement dose', suppPartB: '{taken} of {due} doses marked · missing: {names}',
     freestyle: 'a workout'
   },
   de: {
@@ -24,6 +27,9 @@ const M = {
     dietMissingT: '{name} hat heute keine Mahlzeit eingetragen', dietMissingB: 'Das Ernährungstagebuch ist heute leer.',
     dietOffT: '{name} lag heute neben dem Ziel', dietOffB: '{kcal} / {target} kcal · Eiweiß {p} / {pt} g',
     summaryT: 'Ernährung heute', summaryB: '{n} Schüler: {ok} im Ziel · {off} daneben · {none} ohne Eintrag',
+    suppT: 'Dein Trainer hat deine Supplemente aktualisiert', suppB: 'Öffne die App, um zu sehen, was wann genommen wird.',
+    suppNoneT: '{name} hat heute keine Supplemente markiert', suppNoneB: '{due} Dosen waren fällig, keine wurde markiert.',
+    suppPartT: '{name} hat eine Dosis nicht markiert', suppPartB: '{taken} von {due} Dosen markiert · fehlt: {names}',
     freestyle: 'ein Training'
   },
   es: {
@@ -34,6 +40,9 @@ const M = {
     dietMissingT: '{name} no registró comidas hoy', dietMissingB: 'El diario de alimentación está vacío hoy.',
     dietOffT: '{name} quedó fuera de la meta hoy', dietOffB: '{kcal} / {target} kcal · proteína {p} / {pt} g',
     summaryT: 'Dieta de hoy', summaryB: '{n} alumnos: {ok} en la meta · {off} fuera · {none} sin registro',
+    suppT: 'Tu entrenador actualizó tus suplementos', suppB: 'Abre la app para ver qué tomar y cuándo.',
+    suppNoneT: '{name} no marcó suplementos hoy', suppNoneB: 'Tocaban {due} tomas y no marcó ninguna.',
+    suppPartT: '{name} se saltó una toma', suppPartB: '{taken} de {due} tomas marcadas · falta: {names}',
     freestyle: 'un entrenamiento'
   },
   fr: {
@@ -44,6 +53,9 @@ const M = {
     dietMissingT: '{name} n’a noté aucun repas aujourd’hui', dietMissingB: 'Le journal alimentaire est vide aujourd’hui.',
     dietOffT: '{name} était hors objectif aujourd’hui', dietOffB: '{kcal} / {target} kcal · protéines {p} / {pt} g',
     summaryT: 'Alimentation du jour', summaryB: '{n} élèves : {ok} dans l’objectif · {off} hors objectif · {none} sans saisie',
+    suppT: 'Ton coach a mis à jour tes compléments', suppB: 'Ouvre l’app pour voir quoi prendre et quand.',
+    suppNoneT: '{name} n’a coché aucun complément aujourd’hui', suppNoneB: '{due} prises étaient prévues, aucune cochée.',
+    suppPartT: '{name} a oublié une prise', suppPartB: '{taken} prises sur {due} · manque : {names}',
     freestyle: 'une séance'
   },
   it: {
@@ -54,6 +66,9 @@ const M = {
     dietMissingT: '{name} non ha registrato pasti oggi', dietMissingB: 'Il diario alimentare di oggi è vuoto.',
     dietOffT: '{name} oggi era fuori obiettivo', dietOffB: '{kcal} / {target} kcal · proteine {p} / {pt} g',
     summaryT: 'Dieta di oggi', summaryB: '{n} allievi: {ok} nell’obiettivo · {off} fuori · {none} senza registro',
+    suppT: 'Il tuo allenatore ha aggiornato i tuoi integratori', suppB: 'Apri l’app per vedere cosa prendere e quando.',
+    suppNoneT: '{name} non ha segnato integratori oggi', suppNoneB: 'Erano previste {due} dosi e non ne è stata segnata nessuna.',
+    suppPartT: '{name} ha saltato una dose', suppPartB: '{taken} dosi su {due} · manca: {names}',
     freestyle: 'un allenamento'
   },
   pt: {
@@ -64,6 +79,9 @@ const M = {
     dietMissingT: '{name} não registou refeições hoje', dietMissingB: 'O diário alimentar de hoje está vazio.',
     dietOffT: '{name} ficou fora da meta hoje', dietOffB: '{kcal} / {target} kcal · proteína {p} / {pt} g',
     summaryT: 'Dieta de hoje', summaryB: '{n} alunos: {ok} na meta · {off} fora · {none} sem registo',
+    suppT: 'O teu treinador atualizou os teus suplementos', suppB: 'Abre a app para ver o que tomar e quando.',
+    suppNoneT: '{name} não marcou suplementos hoje', suppNoneB: 'Estavam previstas {due} tomas e nenhuma foi marcada.',
+    suppPartT: '{name} falhou uma toma', suppPartB: '{taken} de {due} tomas marcadas · falta: {names}',
     freestyle: 'um treino'
   },
   pl: {
@@ -74,6 +92,9 @@ const M = {
     dietMissingT: '{name} nie zapisał(a) dziś posiłków', dietMissingB: 'Dzisiejszy dziennik jedzenia jest pusty.',
     dietOffT: '{name} był(a) dziś poza celem', dietOffB: '{kcal} / {target} kcal · białko {p} / {pt} g',
     summaryT: 'Dieta dzisiaj', summaryB: '{n} podopiecznych: {ok} w celu · {off} poza · {none} bez wpisu',
+    suppT: 'Twój trener zaktualizował Twoje suplementy', suppB: 'Otwórz aplikację, aby zobaczyć co i kiedy przyjmować.',
+    suppNoneT: '{name} nie zaznaczył(a) dziś suplementów', suppNoneB: 'Zaplanowano {due} dawek, nie zaznaczono żadnej.',
+    suppPartT: '{name} pominął(-ęła) dawkę', suppPartB: 'Zaznaczono {taken} z {due} dawek · brakuje: {names}',
     freestyle: 'trening'
   },
   tr: {
@@ -84,6 +105,9 @@ const M = {
     dietMissingT: '{name} bugün yemek kaydetmedi', dietMissingB: 'Bugünkü beslenme günlüğü boş.',
     dietOffT: '{name} bugün hedefin dışında kaldı', dietOffB: '{kcal} / {target} kcal · protein {p} / {pt} g',
     summaryT: 'Bugünkü diyet', summaryB: '{n} öğrenci: {ok} hedefte · {off} dışında · {none} kayıtsız',
+    suppT: 'Antrenörün takviyelerini güncelledi', suppB: 'Ne zaman ne alacağını görmek için uygulamayı aç.',
+    suppNoneT: '{name} bugün hiç takviye işaretlemedi', suppNoneB: '{due} doz vardı, hiçbiri işaretlenmedi.',
+    suppPartT: '{name} bir dozu kaçırdı', suppPartB: '{due} dozdan {taken} işaretlendi · eksik: {names}',
     freestyle: 'bir antrenman'
   },
   ru: {
@@ -94,6 +118,9 @@ const M = {
     dietMissingT: '{name} сегодня не записал(а) еду', dietMissingB: 'Дневник питания за сегодня пуст.',
     dietOffT: '{name} сегодня вне цели', dietOffB: '{kcal} / {target} ккал · белок {p} / {pt} г',
     summaryT: 'Питание сегодня', summaryB: 'Учеников: {n} — в цели {ok} · вне цели {off} · без записей {none}',
+    suppT: 'Тренер обновил твои добавки', suppB: 'Открой приложение, чтобы увидеть, что и когда принимать.',
+    suppNoneT: '{name} сегодня не отметил(а) добавки', suppNoneB: 'Запланировано приёмов: {due} — не отмечен ни один.',
+    suppPartT: '{name} пропустил(а) приём', suppPartB: 'Отмечено {taken} из {due} · не хватает: {names}',
     freestyle: 'тренировку'
   },
   zh: {
@@ -104,6 +131,9 @@ const M = {
     dietMissingT: '{name} 今天没有记录饮食', dietMissingB: '今天的饮食日记是空的。',
     dietOffT: '{name} 今天未达成目标', dietOffB: '{kcal} / {target} 千卡 · 蛋白质 {p} / {pt} 克',
     summaryT: '今日饮食', summaryB: '{n} 名学员：{ok} 达标 · {off} 未达标 · {none} 未记录',
+    suppT: '你的教练更新了你的补剂', suppB: '打开应用查看服用的内容和时间。',
+    suppNoneT: '{name} 今天没有记录补剂', suppNoneB: '今天应服 {due} 次，一次也没有勾选。',
+    suppPartT: '{name} 漏了一次补剂', suppPartB: '已勾选 {taken} / {due} 次 · 缺少：{names}',
     freestyle: '一次训练'
   },
   ko: {
@@ -114,6 +144,9 @@ const M = {
     dietMissingT: '{name}님이 오늘 식사를 기록하지 않았어요', dietMissingB: '오늘 식단 일지가 비어 있어요.',
     dietOffT: '{name}님이 오늘 목표를 벗어났어요', dietOffB: '{kcal} / {target} kcal · 단백질 {p} / {pt} g',
     summaryT: '오늘의 식단', summaryB: '회원 {n}명: 목표 달성 {ok} · 이탈 {off} · 미기록 {none}',
+    suppT: '트레이너가 보충제를 업데이트했어요', suppB: '앱을 열어 무엇을 언제 먹을지 확인하세요.',
+    suppNoneT: '{name}님이 오늘 보충제를 체크하지 않았어요', suppNoneB: '{due}회 예정이었지만 하나도 체크하지 않았어요.',
+    suppPartT: '{name}님이 보충제를 놓쳤어요', suppPartB: '{due}회 중 {taken}회 체크 · 누락: {names}',
     freestyle: '운동'
   },
   hi: {
@@ -124,6 +157,9 @@ const M = {
     dietMissingT: '{name} ने आज कोई भोजन दर्ज नहीं किया', dietMissingB: 'आज की फ़ूड डायरी खाली है।',
     dietOffT: '{name} आज लक्ष्य से बाहर रहे', dietOffB: '{kcal} / {target} kcal · प्रोटीन {p} / {pt} g',
     summaryT: 'आज की डाइट', summaryB: '{n} छात्र: {ok} लक्ष्य में · {off} बाहर · {none} दर्ज नहीं',
+    suppT: 'आपके ट्रेनर ने आपके सप्लीमेंट अपडेट किए', suppB: 'क्या और कब लेना है, देखने के लिए ऐप खोलें।',
+    suppNoneT: '{name} ने आज कोई सप्लीमेंट दर्ज नहीं किया', suppNoneB: 'आज {due} खुराक थीं, एक भी दर्ज नहीं हुई।',
+    suppPartT: '{name} ने एक खुराक छोड़ दी', suppPartB: '{due} में से {taken} खुराक दर्ज · बाकी: {names}',
     freestyle: 'एक वर्कआउट'
   }
 };

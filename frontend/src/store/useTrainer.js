@@ -9,7 +9,7 @@ import { uid } from '../lib/format.js'
 import { cleanEx } from '../lib/plan-share.js'
 import { registerForeign } from '../lib/exercises.js'
 import { DEFAULT_GLYPH } from '../lib/glyphs.js'
-import { fetchStudent, sendPlan, removePlan, sendDiet, removeDiet, fetchStudentDiet } from '../lib/trainer-api.js'
+import { fetchStudent, sendPlan, removePlan, sendDiet, removeDiet, fetchStudentDiet, sendSupps, removeSupps, fetchStudentSupps } from '../lib/trainer-api.js'
 import { computeTargets, toKg } from '../lib/nutrition.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
@@ -34,6 +34,10 @@ export function draftTargets(draft, today) {
   const c = draft.calc ? computeTargets(draft.calc, draft.calc.kg, today) : null
   return c ? { kcal: c.kcal, p: c.p, c: c.c, f: c.f } : null
 }
+export const newSuppId = () => 's' + uid()
+const suppDraftFrom = supps => supps
+  ? clone({ items: supps.items || [], note: supps.note || '' })
+  : { items: [], note: '' }
 const dietDraftFrom = (diet, d) => diet
   ? clone({ targets: diet.targets, calc: diet.calc || { ...calcFromStudent(d), manual: true }, meals: diet.meals || [], note: diet.note || '' })
   : { targets: null, calc: calcFromStudent(d), meals: [], note: '' }
@@ -53,14 +57,16 @@ export const useTrainer = create((set, get) => ({
     try {
       const d = await fetchStudent(sid)
       registerForeign([...(d.customEx || []), ...(d.plan?.customEx || [])])
-      // `fresh`: true, 'plan' or 'diet' — which unsaved draft to drop (the one just sent).
+      // `fresh`: true, 'plan', 'diet' or 'supps' — which unsaved draft to drop (the one just sent).
       const same = get().sid === sid
       const keepPlan = same && get().dirty && fresh !== true && fresh !== 'plan'
       const keepDiet = same && get().dietDirty && fresh !== true && fresh !== 'diet'
+      const keepSupps = same && get().suppDirty && fresh !== true && fresh !== 'supps'
       set({
         sid, student: d, loading: false,
         ...(keepPlan ? {} : { draft: draftFrom(d.plan), baseVersion: d.planVersion || 0, dirty: false }),
-        ...(keepDiet ? {} : { dietDraft: dietDraftFrom(d.diet, d), dietBase: d.dietVersion || 0, dietDirty: false })
+        ...(keepDiet ? {} : { dietDraft: dietDraftFrom(d.diet, d), dietBase: d.dietVersion || 0, dietDirty: false }),
+        ...(keepSupps ? {} : { suppDraft: suppDraftFrom(d.supps), suppBase: d.suppVersion || 0, suppDirty: false })
       })
     } catch (e) { set({ loading: false, error: e.message }) }
   },
@@ -166,6 +172,47 @@ export const useTrainer = create((set, get) => ({
   async removeDiet() {
     const res = await removeDiet(get().sid)
     await get().load(get().sid, { fresh: 'diet' })
+    return res
+  },
+
+  /* ------------------------------ supplements ------------------------------ */
+  suppDraft: null,    // { items, note }
+  suppBase: 0,
+  suppDirty: false,
+
+  editSupps(fn) {
+    const suppDraft = clone(get().suppDraft || { items: [], note: '' })
+    fn(suppDraft)
+    set({ suppDraft, suppDirty: true })
+  },
+  addSupp(name) {
+    const it = { id: newSuppId(), name, dose: '', days: [], perDay: 1 }
+    get().editSupps(x => { x.items.push(it) })
+    return it.id
+  },
+  discardSupps() {
+    set({ suppDraft: suppDraftFrom(get().student?.supps), suppDirty: false })
+  },
+  /** Start from another student's list — new ids, so the two are not the same prescription. */
+  async copySuppsFrom(otherId) {
+    const { supps } = await fetchStudentSupps(otherId)
+    if (!supps?.items?.length) return false
+    get().editSupps(x => {
+      x.items = supps.items.map(i => ({ ...clone(i), id: newSuppId() }))
+      x.note = supps.note || ''
+    })
+    return true
+  },
+  async saveSupps() {
+    const { sid, suppDraft, suppBase } = get()
+    const res = await sendSupps(sid, suppBase, suppDraft)
+    set({ suppDirty: false })
+    await get().load(sid, { fresh: 'supps' })
+    return res
+  },
+  async removeSupps() {
+    const res = await removeSupps(get().sid)
+    await get().load(get().sid, { fresh: 'supps' })
     return res
   }
 }))

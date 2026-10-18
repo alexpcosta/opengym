@@ -13,6 +13,7 @@ import TrainerEvent from '../components/TrainerEvent.jsx'
 import { Button, Segmented, TextArea } from '../components/ui.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import TrainerDietTab from './TrainerDiet.jsx'
+import TrainerSuppsTab from './TrainerSupps.jsx'
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]
 
@@ -116,8 +117,8 @@ export default function TrainerStudent() {
   const nav = useNavigate()
   const { sid } = useParams()
   const user = useStore(s => s.user)
-  const { student: d, dirty: planDirty, dietDirty, load, loading, error } = useTrainer()
-  const dirty = planDirty || dietDirty
+  const { student: d, dirty: planDirty, dietDirty, suppDirty, load, loading, error } = useTrainer()
+  const dirty = planDirty || dietDirty || suppDirty
   const [tab, setTab] = useState('plan')
   useEffect(() => { if (user?.admin) load(sid) }, [sid])
   if (!user?.admin) return null
@@ -163,8 +164,9 @@ export default function TrainerStudent() {
     </div>
 
     <Segmented className="seg-inline" value={tab} onChange={setTab}
-      options={[{ value: 'plan', label: t('Training') }, { value: 'diet', label: t('Diet') }, { value: 'history', label: t('History') }]} />
+      options={[{ value: 'plan', label: t('Training') }, { value: 'diet', label: t('Diet') }, { value: 'supps', label: t('Supps') }, { value: 'history', label: t('History') }]} />
     <div style={{ height: 12 }} />
-    {tab === 'plan' ? <PlanTab d={d} nav={nav} /> : tab === 'diet' ? <TrainerDietTab d={d} /> : <HistoryTab d={d} />}
+    {tab === 'plan' ? <PlanTab d={d} nav={nav} /> : tab === 'diet' ? <TrainerDietTab d={d} />
+      : tab === 'supps' ? <TrainerSuppsTab d={d} /> : <HistoryTab d={d} />}
   </div>
 }

@@ -1,8 +1,8 @@
 # Trainer mode and the food diary
 
 This fork turns the instance's admins into **trainers**. A trainer writes each student's
-training plan and diet, sees every workout and every logged meal, and gets a notification when
-something worth knowing happens. Students get a food diary in the style of MyFitnessPal:
+training plan, diet and supplement list, sees every workout, every logged meal and every dose
+ticked off, and gets a notification when something worth knowing happens. Students get a food diary in the style of MyFitnessPal:
 calories and macros against targets calculated from their goal, searched from a food table in
 Portuguese and Spanish, or read off a barcode.
 
@@ -59,6 +59,34 @@ Same student page → **Diet**.
   per 100 g appear for every student under "From your trainer" — local dishes, a supplement, the
   gym's shake.
 
+## Supplements
+
+Same student page → **Supps**.
+
+A short list, by design: each entry is a **name**, an **amount in your own words** ("5 g",
+"2 cápsulas", "1 scoop"), the **days** it is taken on and **how many times** a day — optionally
+with a clock time per dose, and a note ("with water, after training"). Up to 40 entries, up to
+six doses a day each.
+
+There is no route, no mg/ml field and no cycle: this is the adherence list you and the student
+tick off together. Anything a doctor prescribed belongs with their doctor, and the student's
+screen says so.
+
+- **On the student's phone.** A **Supplements** screen (from Home, and from the row under the
+  diary) lists what is due today with one tick per dose, the two weeks behind it as coloured
+  squares, and **Tick everything for this day** when a day went as written. Earlier days can be
+  filled in — nothing is ever "too late".
+- **A dose is a slot, not a clock time.** Ticking "the second one" means the same thing after you
+  move 20:00 to 21:00, so changing the times never erases what was already marked, and a student
+  in another time zone is never late.
+- **Last 14 days** on your side: each day is all ticked, partly ticked, not ticked, or had
+  nothing due. Tap a day to see which dose was missed.
+- **Copy from another student** starts a list from one you already wrote (with fresh ids — two
+  students never share one prescription).
+- **Remove the list** takes it off their phone. What they already ticked stays.
+- A list that falls on Monday to Friday is never "missed" on a Sunday, and days with nothing due
+  are not counted against anyone.
+
 ## Notifications
 
 The bell on the Students screen. Each kind can be switched off. Everything also lands in the
@@ -71,9 +99,11 @@ The bell on the Students screen. Each kind can be switched off. Everything also 
 | Planned workout skipped | At the check time (default 21:00), if the day had a planned routine and nothing was logged. |
 | No food logged | At the diary check time (default 22:00), for students who have targets. |
 | Day off target | Same time: calories more than 15 % off the target, or protein under 90 % of it. |
+| Nothing ticked | At the dose check time (default 21:30), when doses were due that day and none were marked. |
+| Dose missed | Same time: some doses marked and some not, with the supplements still outstanding named. |
 | Daily summary | At the summary time (default 22:30) on *your* clock: "6 students: 4 on target · 1 off · 1 not logged". |
 
-The workout and diary checks run on **each student's own clock** — their app reports its time
+The workout, diary and dose checks run on **each student's own clock** — their app reports its time
 zone every time it opens. Push needs notifications switched on in Settings on the device you
 want them on. Tapping one opens the student's page.
 
@@ -125,15 +155,18 @@ All under `./data`, so backing up `./data` still backs up everything:
 |---|---|
 | `trainer/plans/<uid>.json` | The trainer's plan for a student, versioned |
 | `trainer/diets/<uid>.json` | The trainer's diet for a student, versioned |
+| `trainer/supps/<uid>.json` | The trainer's supplement list for a student, versioned |
 | `trainer/foods.json` | Trainer foods |
 | `trainer/events.json` | The feed (last 1000 events) |
 | `trainer/state.json`, `trainer/settings.json` | Once-a-day markers; check times |
 | `diet/<uid>/<YYYY-MM>.json` | Each student's food diary, by month |
+| `supp/<uid>/<YYYY-MM>.json` | Each student's ticked doses, by month |
 | `food/cache.json` | Open Food Facts answers |
 
 Plans and diets live outside the students' state files on purpose. A device PUTs its whole state
 and the newest copy wins, so anything the server wrote in there would be erased by the next
 phone to sync. Plans and diets are pulled and applied on the device instead, like the Coach's
 proposals, and a phone that synced a stale copy reapplies the current version on its next launch.
-The diary is kept per day for the same reason, and because a year of meals is bigger than
-everything else in a profile together.
+The diary and the ticked doses are kept per day for the same reason, and because a year of meals
+is bigger than everything else in a profile together — and because the daily checks have to read
+them on the server.

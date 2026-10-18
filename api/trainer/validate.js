@@ -161,6 +161,54 @@ export function validateTrainerDiet(data) {
   return { ok: true, diet: { targets, calc, meals, note: clampStr(data.note, 1000) } };
 }
 
+/* ------------------------------ supplements ------------------------------ */
+// What a trainer may prescribe here: a named supplement, a free-text amount ("5 g", "2
+// cápsulas"), the weekdays it is taken on and how many times a day. Deliberately no
+// medication fields — no route, no mg/ml, no cycle: this is the adherence list a trainer and
+// a student tick off together, and anything a pharmacist should see does not belong in it.
+export const SUPP_ID = /^s[A-Za-z0-9_-]{1,40}$/;
+const MAX_SUPPS = 40;
+const MAX_PER_DAY = 6;
+
+/** Returns { ok, supps:{items, note} } or { ok:false, errors }. */
+export function validateTrainerSupps(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object') return { ok: false, errors: ['supplements must be an object'] };
+  if (!Array.isArray(data.items) || !data.items.length) errors.push('add at least one supplement');
+  if ((data.items || []).length > MAX_SUPPS) errors.push(`at most ${MAX_SUPPS} supplements`);
+
+  const seen = new Set();
+  const items = [];
+  (Array.isArray(data.items) ? data.items : []).slice(0, MAX_SUPPS).forEach((it, i) => {
+    const where = `supplement ${i + 1}`;
+    if (!it || typeof it !== 'object') { errors.push(`${where} is not an object`); return; }
+    if (!SUPP_ID.test(it.id || '')) { errors.push(`${where} has an invalid id`); return; }
+    if (seen.has(it.id)) { errors.push(`${where} repeats id ${it.id}`); return; }
+    seen.add(it.id);
+    if (!isStr(it.name)) { errors.push(`${where} needs a name`); return; }
+    // A sorted, de-duplicated subset of 0-6. Empty means every day, which is also what a
+    // trainer who ticks all seven gets — one representation, so the UI reads back what it sent.
+    const days = [...new Set((Array.isArray(it.days) ? it.days : []).filter(d => Number.isInteger(d) && d >= 0 && d <= 6))].sort();
+    // `times` is POSITIONAL: times[i] labels dose i, and '' means "no particular time". The
+    // slot index is the identity a student's tick is stored under, so the list is never sorted
+    // or de-duplicated — doing either would relabel a dose that was already ticked. An entry
+    // that is not a clock time becomes '', which the app renders as "dose 2".
+    const labels = (Array.isArray(it.times) ? it.times : []).slice(0, MAX_PER_DAY).map(v => (HHMM.test(v || '') ? v : ''));
+    // Doses a day: what the trainer chose, else however many times they filled in, else one.
+    const perDay = intIn(it.perDay, 1, MAX_PER_DAY, 0) || labels.filter(Boolean).length || 1;
+    const times = labels.slice(0, perDay);
+    while (times.length < perDay) times.push('');
+    items.push({
+      id: it.id, name: clampStr(it.name, 60), dose: clampStr(it.dose, 40),
+      days: days.length === 7 ? [] : days, perDay, ...(times.some(Boolean) ? { times } : {}),
+      ...(isStr(it.note) ? { note: clampStr(it.note, 200) } : {})
+    });
+  });
+
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, supps: { items, note: clampStr(data.note, 1000) } };
+}
+
 /** A food a trainer offers every student (GET /api/food/trainer). */
 export function validateTrainerFood(f) {
   const food = cleanFood({ ...f, src: 'trainer' });

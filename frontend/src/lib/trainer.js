@@ -108,3 +108,31 @@ export function applyTrainerDiet(s, diet) {
 export function markDietSeen(s) {
   if (s.diet) s.diet.seenVersion = s.diet.version
 }
+
+/* ------------------------------ supplements ------------------------------ */
+// The supplement list arrives the same way as the plan and the diet (GET
+// /api/trainer/my-supps, versioned) and is kept whole in S.supps — names, amounts, the days
+// and times. What the student ticked is NOT here: it is a day at a time on the server
+// (store/useSupp.js), because the trainer's daily check has to read it.
+
+/** Apply a list from GET /api/trainer/my-supps to draft state `s` (inside store.update). */
+export function applyTrainerSupps(s, supps) {
+  if (!supps || supps.removed || !(supps.items || []).length) {
+    s.supps = supps ? { version: supps.version, removed: true } : null
+    return
+  }
+  s.supps = {
+    version: supps.version,
+    items: (supps.items || []).map(i => ({
+      id: i.id, name: i.name, dose: i.dose || '', days: i.days || [], perDay: i.perDay || 1,
+      ...(i.times?.length ? { times: i.times } : {}), ...(i.note ? { note: i.note } : {})
+    })),
+    by: supps.by || '',
+    note: supps.note || '',
+    updatedAt: supps.updatedAt || null,
+    seenVersion: s.supps?.seenVersion || 0
+  }
+}
+export function markSuppsSeen(s) {
+  if (s.supps) s.supps.seenVersion = s.supps.version
+}

@@ -10,16 +10,22 @@
  * rest is handed to the daily loop.
  */
 import * as store from './store.js';
-import { validateTrainerPlan, validateTrainerDiet, validateTrainerFood } from './validate.js';
+import { validateTrainerPlan, validateTrainerDiet, validateTrainerFood, validateTrainerSupps } from './validate.js';
 import { targetsFor, dayStatus } from './diet-checks.js';
 import { readDays } from '../diet/store.js';
 import { totals } from '../diet/entries.js';
+import { readDays as readSuppDays } from '../supp/store.js';
+import { dayStatus as suppDayStatus } from '../supp/log.js';
+import { suppsFor } from './supp-checks.js';
 import crypto from 'node:crypto';
 import { newWorkouts, workoutSummary, adherence } from './notify.js';
 import { msg, fmtNum, fmtDur } from './messages.js';
 import { effectiveRoutineId, userNow, zoneOf, isoMinus } from '../lib/schedule.js';
 
-export const DEFAULT_PREFS = { done: true, pr: true, missed: true, dietMissing: true, dietOff: true, dietSummary: true };
+export const DEFAULT_PREFS = {
+  done: true, pr: true, missed: true, dietMissing: true, dietOff: true, dietSummary: true,
+  suppMissing: true, suppPartial: true
+};
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export function createTrainer({ json, readBody, readSession, requireAdmin, readState, sendPush, isAdmin, getDb, saveDb }) {
@@ -79,6 +85,47 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     acked: (rec.ackedVersion || 0) >= rec.version
   };
 
+  const suppsForStudent = rec => rec && {
+    version: rec.version, removed: !!rec.removed, items: rec.items || [],
+    note: rec.note || '', updatedAt: rec.updatedAt, by: rec.updatedByName || '',
+    acked: (rec.ackedVersion || 0) >= rec.version
+  };
+  const suppStatus = rec => rec && !rec.removed
+    ? { version: rec.version, updatedAt: rec.updatedAt, acked: (rec.ackedVersion || 0) >= rec.version, ackedAt: rec.ackedAt || null, items: (rec.items || []).length }
+    : null;
+
+  /** The weekday an ISO date falls on, counted the same way the daily check counts it. */
+  const weekdayOf = iso => new Date(iso + 'T12:00:00Z').getUTCDay();
+
+  /** The last `n` days of a student's supplement log, each with how many doses were ticked. */
+  function suppDays(uid, items, today, n) {
+    const days = readSuppDays(uid, isoMinus(today, n - 1), today);
+    const out = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const d = isoMinus(today, i);
+      const day = days[d] || null;
+      // `ticks` is the raw per-item map (the trainer taps a day to see which dose was
+      // missed); `taken` from suppDayStatus is the count. Different keys, or one shadows the other.
+      out.push({ d, ticks: day?.taken || {}, ...suppDayStatus(items, day, weekdayOf(d)) });
+    }
+    return out;
+  }
+  // Last 7 days, without today (still being taken): of the days that had doses due, how many
+  // were fully ticked.
+  function suppWeek(uid, items, today) {
+    if (!items?.length) return null;
+    const days = readSuppDays(uid, isoMinus(today, 7), isoMinus(today, 1));
+    let due = 0, ok = 0;
+    for (let i = 1; i <= 7; i++) {
+      const d = isoMinus(today, i);
+      const st = suppDayStatus(items, days[d], weekdayOf(d));
+      if (st.status === 'rest') continue;
+      due++;
+      if (st.status === 'ok') ok++;
+    }
+    return { days: due, ok };
+  }
+
   /** The last `n` days of a student's food diary, each with totals and how it went. */
   function diaryDays(uid, S, today, n) {
     const from = isoMinus(today, n - 1);
@@ -111,7 +158,14 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
   /** Shared by plans and diets: version check, write, tell the student. */
   const FILES = {
     plan: [store.readPlan, store.writePlan],
-    diet: [store.readDiet, store.writeDiet]
+    diet: [store.readDiet, store.writeDiet],
+    supps: [store.readSupps, store.writeSupps]
+  };
+  // What the student is told when a kind of plan lands, and where the notification opens.
+  const NOTIFY = {
+    plan: ['planT', 'planB', '#/plan'],
+    diet: ['dietT', 'dietB', '#/diet'],
+    supps: ['suppT', 'suppB', '#/supps']
   };
   function sendVersioned(res, admin, u, kind, clean, baseVersion) {
     const [read, write] = FILES[kind];
@@ -128,11 +182,10 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
     };
     write(u.id, rec);
     const lang = langOf(u.id);
-    const [title, body, url] = kind === 'plan' ? [msg(lang, 'planT'), msg(lang, 'planB'), '#/plan']
-      : [msg(lang, 'dietT'), msg(lang, 'dietB'), '#/diet'];
+    const [titleKey, bodyKey, url] = NOTIFY[kind];
     // Writing your own plan is not news to you.
-    if (u.id !== admin.id) sendPush(u.id, { title, body, tag: 'trainer-' + kind, url }).catch(() => {});
-    json(res, 200, { version: rec.version, [kind]: planStatus(rec) });
+    if (u.id !== admin.id) sendPush(u.id, { title: msg(lang, titleKey), body: msg(lang, bodyKey), tag: 'trainer-' + kind, url }).catch(() => {});
+    json(res, 200, { version: rec.version, [kind]: (kind === 'supps' ? suppStatus : planStatus)(rec) });
   }
   function removeVersioned(res, admin, u, kind, empty) {
     const [read, write] = FILES[kind];
@@ -182,6 +235,8 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
           plan: planStatus(store.readPlan(u.id)),
           diet: planStatus(store.readDiet(u.id)),
           diet7: dietWeek(u.id, S, today),
+          supps: suppStatus(store.readSupps(u.id)),
+          supp7: suppWeek(u.id, suppsFor(u.id), today),
           adherence7: { planned: a7.planned, done: a7.done },
           adherence28: { planned: a28.planned, done: a28.done },
           unread: unreadFor(admin, u.id)
@@ -198,6 +253,7 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
       const S = readState(u.id) || {};
       const plan = store.readPlan(u.id);
       const diet = store.readDiet(u.id);
+      const supps = store.readSupps(u.id);
       const trainerIds = new Set((plan && !plan.removed ? plan.routines : []).map(r => r.id));
       const today = todayOf(S);
       json(res, 200, {
@@ -216,6 +272,9 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
         planVersion: plan?.version || 0,
         diet: diet && !diet.removed ? { ...dietForStudent(diet), calc: diet.calc || null, ackedVersion: diet.ackedVersion || 0, ackedAt: diet.ackedAt || null } : null,
         dietVersion: diet?.version || 0,
+        supps: supps && !supps.removed ? { ...suppsForStudent(supps), ackedVersion: supps.ackedVersion || 0, ackedAt: supps.ackedAt || null } : null,
+        suppVersion: supps?.version || 0,
+        suppLog: suppDays(u.id, suppsFor(u.id) || [], today, 14),
         targets: targetsFor(u.id, S),
         diary: diaryDays(u.id, S, today, 14),
         adherence: adherence(S, today, 28, effectiveRoutineId, isoMinus).days
@@ -265,6 +324,36 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
       if (!u) return json(res, 404, { error: 'no such student' });
       const rec = store.readDiet(u.id);
       json(res, 200, { diet: rec && !rec.removed ? { targets: rec.targets, meals: rec.meals || [], calc: rec.calc || null, note: rec.note || '' } : null });
+    },
+
+    /* Supplements: what to take, on which days, how much and how many times a day. The
+     * student ticks each dose off and the daily check (trainer/supp-checks.js) tells the
+     * trainer about a day that went unticked. */
+    'PUT /api/trainer/supps': async (req, res) => {
+      const admin = requireAdmin(req, res); if (!admin) return;
+      const body = await readBody(req);
+      const u = findStudent(body.id, admin);
+      if (!u) return json(res, 404, { error: 'no such student' });
+      const v = validateTrainerSupps(body.supps);
+      if (!v.ok) return json(res, 400, { error: v.errors.join('; '), errors: v.errors });
+      sendVersioned(res, admin, u, 'supps', v.supps, body.baseVersion);
+    },
+
+    'POST /api/trainer/supps/remove': async (req, res) => {
+      const admin = requireAdmin(req, res); if (!admin) return;
+      const body = await readBody(req);
+      const u = findStudent(body.id, admin);
+      if (!u) return json(res, 404, { error: 'no such student' });
+      removeVersioned(res, admin, u, 'supps', { items: [] });
+    },
+
+    // Another student's list as a starting point ("copy supplements from…").
+    'GET /api/trainer/supps': async (req, res) => {
+      const admin = requireAdmin(req, res); if (!admin) return;
+      const u = findStudent(new URL(req.url, 'http://x').searchParams.get('id'), admin);
+      if (!u) return json(res, 404, { error: 'no such student' });
+      const rec = store.readSupps(u.id);
+      json(res, 200, { supps: rec && !rec.removed ? { items: rec.items || [], note: rec.note || '' } : null });
     },
 
     /* Foods the trainer offers every student, e.g. "Chipa (casera)" with its numbers. */
@@ -366,6 +455,20 @@ export function createTrainer({ json, readBody, readSession, requireAdmin, readS
       if (!user) return json(res, 401, { error: 'not signed in' });
       const body = await readBody(req);
       ackVersioned(user, 'diet', body.version);
+      json(res, 200, { ok: true });
+    },
+
+    'GET /api/trainer/my-supps': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      json(res, 200, { supps: suppsForStudent(store.readSupps(user.id)) });
+    },
+
+    'POST /api/trainer/my-supps/ack': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const body = await readBody(req);
+      ackVersioned(user, 'supps', body.version);
       json(res, 200, { ok: true });
     }
   };

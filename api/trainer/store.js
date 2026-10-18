@@ -8,6 +8,7 @@
  *
  *   plans/<uid>.json   the trainer-authored workout plan for one student
  *   diets/<uid>.json   the trainer-authored diet for one student
+ *   supps/<uid>.json   the trainer-authored supplement list for one student
  *   foods.json         foods a trainer created, visible to every student
  *   events.json        the feed: workouts done, PRs, missed days, diet checks (ring buffer)
  *   state.json         once-a-day markers, so a daily check never fires twice
@@ -36,10 +37,13 @@ function writeJSON(file, obj) {
 /* ---------- per-student plan and diet ---------- */
 const planFile = uid => path.join(DIR, 'plans', safe(uid) + '.json');
 const dietFile = uid => path.join(DIR, 'diets', safe(uid) + '.json');
+const suppFile = uid => path.join(DIR, 'supps', safe(uid) + '.json');
 export const readPlan = uid => readJSON(planFile(uid), null);
 export const writePlan = (uid, rec) => writeJSON(planFile(uid), rec);
 export const readDiet = uid => readJSON(dietFile(uid), null);
 export const writeDiet = (uid, rec) => writeJSON(dietFile(uid), rec);
+export const readSupps = uid => readJSON(suppFile(uid), null);
+export const writeSupps = (uid, rec) => writeJSON(suppFile(uid), rec);
 
 /* ---------- trainer foods ---------- */
 const foodsFile = () => path.join(DIR, 'foods.json');
@@ -77,7 +81,7 @@ export function mark(key, date) {
 }
 
 /* ---------- instance-wide check times ---------- */
-export const DEFAULT_TIMES = { missedAt: '21:00', dietAt: '22:00', summaryAt: '22:30' };
+export const DEFAULT_TIMES = { missedAt: '21:00', dietAt: '22:00', suppAt: '21:30', summaryAt: '22:30' };
 const settingsFile = () => path.join(DIR, 'settings.json');
 export const readTimes = () => ({ ...DEFAULT_TIMES, ...readJSON(settingsFile(), {}) });
 export const writeTimes = times => writeJSON(settingsFile(), times);

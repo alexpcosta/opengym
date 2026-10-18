@@ -11,6 +11,8 @@ import { Button } from '../components/ui.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { coachAvailable, hasConsent } from '../lib/coach.js'
 import { trainerLocked, trainerPlanUnseen, markPlanSeen, dietUnseen, markDietSeen } from '../lib/trainer.js'
+import { useSupp } from '../store/useSupp.js'
+import { suppsOf, suppUnseen, suppAvailable, dayStatus, weekdayOf } from '../lib/supp.js'
 import { fetchUnread } from '../lib/trainer-api.js'
 import { useDiet } from '../store/useDiet.js'
 import { dietAvailable, targetsOf } from '../lib/diet.js'
@@ -81,6 +83,50 @@ function TrainerDietCard({ nav }) {
         </div>
       </div>
       <span className="tag acc">{t('See')}</span>
+    </div>
+  </div>
+}
+
+// The same for a new or changed supplement list.
+function TrainerSuppsCard({ nav }) {
+  const S = useStore(s => s.S)
+  if (!suppUnseen(S)) return null
+  return <div className="card" style={{ borderColor: 'var(--acc)' }}>
+    <div className="today-row" style={{ marginTop: 0 }} onClick={() => nav('/supps')}>
+      <div className="row" style={{ gap: 9, minWidth: 0 }}>
+        <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="capsule" /></span>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2">{S.supps.by || t('Your trainer')}</div>
+          <div className="ttl">{t('Your trainer updated your supplements')}</div>
+          {S.supps.note && <div className="small muted" style={{ whiteSpace: 'pre-wrap', marginTop: 2 }}>{S.supps.note}</div>}
+        </div>
+      </div>
+      <span className="tag acc">{t('See')}</span>
+    </div>
+  </div>
+}
+
+// Today's doses, while any are still unticked — the one nudge the student needs to see here.
+function SuppCard({ nav }) {
+  const S = useStore(s => s.S)
+  const today = todayISO()
+  const day = useSupp(s => s.days[today])
+  const pull = useSupp(s => s.pull)
+  const items = suppsOf(S)
+  useEffect(() => { if (items) pull(today, today) }, [!!items])
+  if (!items || suppUnseen(S)) return null         // the card above already says it
+  const { due, taken, status } = dayStatus(items, day, weekdayOf(today))
+  if (status === 'rest' || status === 'ok') return null
+  return <div className="card">
+    <div className="today-row" style={{ marginTop: 0 }} onClick={() => nav('/supps')}>
+      <div className="row" style={{ gap: 9, minWidth: 0 }}>
+        <span className="lrow-i" style={{ background: 'var(--teal)' }}><Icon name="capsule" /></span>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2">{t('Supplements')}</div>
+          <div className="ttl">{t('{0} of {1} doses', taken, due)}</div>
+        </div>
+      </div>
+      <span className="tag">{t('Tick')}</span>
     </div>
   </div>
 }
@@ -186,8 +232,10 @@ export default function Home() {
     {user?.admin && !DEMO && !MOBILE && <TrainerCard nav={nav} />}
     <TrainerPlanCard nav={nav} />
     <TrainerDietCard nav={nav} />
+    <TrainerSuppsCard nav={nav} />
     {coachOn && <CoachCard nav={nav} />}
     {dietAvailable(user, { demo: DEMO, mobile: MOBILE }) && <DietCard nav={nav} />}
+    {suppAvailable(user, { demo: DEMO, mobile: MOBILE }) && <SuppCard nav={nav} />}
 
     {!S.routines.length && !S.active && (
       <div className="card">

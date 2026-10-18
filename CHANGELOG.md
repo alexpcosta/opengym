@@ -24,6 +24,14 @@ you lift. **[Guide →](docs/TRAINER.md)**
 - 📋 **Diets written by your trainer.** Targets from the calculator or typed in, an optional menu
   per meal with alternatives for each food, and foods the trainer adds for everyone. The student
   ticks off what they ate as planned, or swaps; the trainer reads the last 14 days meal by meal.
+- 💊 **Supplements written by your trainer.** A short list per student — name, the amount in
+  the trainer's own words ("5 g", "2 cápsulas"), the days, how many times a day, optionally a
+  time per dose and a note. The student gets a screen that ticks each dose off, with the last two
+  weeks as coloured squares; the trainer sees the same squares and hears about a day that went
+  unticked, or only half ticked, with the outstanding supplements named. A dose is a slot rather
+  than a clock time, so moving 20:00 to 21:00 never erases what was marked, and days the list
+  does not fall on are never counted as missed. No route, no mg/ml, no cycles: it is an adherence
+  list, and what a doctor prescribed stays with the doctor.
 - Diet replaces Exercises in the tab bar for signed-in profiles; the library is a tap away in the
   Plan header. Guests, the Android app and the demo are unchanged.
 - Notification taps now open the screen they are about (this also fixes the Coach's link).

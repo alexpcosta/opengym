@@ -11,6 +11,8 @@ const LOOK = {
   'diet-missing': { icon: 'clipboard', tint: 'var(--orange)' },
   'diet-off': { icon: 'target', tint: 'var(--orange)' },
   'diet-ok': { icon: 'target', tint: 'var(--green)' },
+  'supp-missing': { icon: 'capsule', tint: 'var(--red)' },
+  'supp-partial': { icon: 'capsule', tint: 'var(--orange)' },
   summary: { icon: 'list', tint: 'var(--indigo)' }
 }
 
@@ -26,6 +28,8 @@ export function eventText(e) {
     case 'missed': return { title: t('{0} skipped {1}', who, d.routine || t('a planned workout')), sub: t('Planned for {0}, nothing logged.', fmtDate(e.date, true)) }
     case 'diet-missing': return { title: t('{0} logged no food', who), sub: fmtDate(e.date, true) }
     case 'diet-off': return { title: t('{0} was off the diet target', who), sub: t('{0} of {1} kcal · protein {2} of {3} g', Math.round(d.kcal || 0), Math.round(d.target || 0), Math.round(d.p || 0), Math.round(d.pt || 0)) }
+    case 'supp-missing': return { title: t('{0} ticked no supplements', who), sub: t('{0} doses were due on {1}.', d.due || 0, fmtDate(e.date, true)) }
+    case 'supp-partial': return { title: t('{0} missed a supplement dose', who), sub: t('{0} of {1} doses · missing: {2}', d.taken || 0, d.due || 0, d.names || '—') }
     case 'summary': return { title: t('Diet summary'), sub: t('{0} on target · {1} off · {2} not logged', d.ok || 0, d.off || 0, d.none || 0) }
     default: return { title: e.kind, sub: '' }
   }

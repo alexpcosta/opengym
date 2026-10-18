@@ -31,6 +31,11 @@ function PrefsSheet({ close }) {
       <Row icon="xmark" iconTint="var(--red)" title={t('Planned workout skipped')}><Switch checked={d.prefs.missed} onChange={v => setPref('missed', v)} /></Row>
       <Row icon="clock" iconTint="var(--grey)" title={t('Check skipped workouts at')} subtitle={t('In each student’s own time zone.')}>{time('missedAt')}</Row>
     </Section>
+    <Section title={t('Supplements')}>
+      <Row icon="capsule" iconTint="var(--red)" title={t('Nothing ticked')} subtitle={t('Doses were due and none were marked.')}><Switch checked={d.prefs.suppMissing} onChange={v => setPref('suppMissing', v)} /></Row>
+      <Row icon="capsule" iconTint="var(--orange)" title={t('Dose missed')} subtitle={t('Some doses marked, some not.')}><Switch checked={d.prefs.suppPartial} onChange={v => setPref('suppPartial', v)} /></Row>
+      <Row icon="clock" iconTint="var(--grey)" title={t('Check the doses at')} subtitle={t('In each student’s own time zone.')}>{time('suppAt')}</Row>
+    </Section>
     <Section title={t('Diet')}>
       <Row icon="clipboard" iconTint="var(--orange)" title={t('No food logged')}><Switch checked={d.prefs.dietMissing} onChange={v => setPref('dietMissing', v)} /></Row>
       <Row icon="target" iconTint="var(--orange)" title={t('Day off target')} subtitle={t('Calories 15% off, or protein under 90%.')}><Switch checked={d.prefs.dietOff} onChange={v => setPref('dietOff', v)} /></Row>
@@ -139,12 +144,14 @@ export default function Trainer() {
             s.adherence7.planned ? t('{0} of {1} this week', s.adherence7.done, s.adherence7.planned) : t('{0} workouts', s.workouts),
             s.lastWorkout ? t('last {0}', fmtDate(s.lastWorkout)) : t('no workouts yet'),
             ...(s.diet7 ? [t('diet {0}/7 on target', s.diet7.ok)] : []),
+            ...(s.supp7?.days ? [t('supps {0}/{1} ticked', s.supp7.ok, s.supp7.days)] : []),
             t('synced {0}', relTime(s.lastSync))
           ].join(' · ')}</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end', flex: 'none' }}>
           {planTag(s)}
           {s.diet && <span className={'tag' + (s.diet.acked ? ' acc' : '')} style={s.diet.acked ? null : { color: 'var(--orange)' }}>{t('Diet')}</span>}
+          {s.supps && <span className={'tag' + (s.supps.acked ? ' acc' : '')} style={s.supps.acked ? null : { color: 'var(--orange)' }}>{t('Supps')}</span>}
         </div>
         <Icon name="chevronRight" className="chev" />
       </div>)}

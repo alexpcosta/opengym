@@ -4,8 +4,9 @@ import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
-import { applyTrainerPlan, applyTrainerDiet, markPlanSeen, markDietSeen } from '../lib/trainer.js'
+import { applyTrainerPlan, applyTrainerDiet, applyTrainerSupps, markPlanSeen, markDietSeen, markSuppsSeen } from '../lib/trainer.js'
 import { useDiet } from './useDiet.js'
+import { useSupp } from './useSupp.js'
 
 const KEY = 'gym_state_v1'
 export const DEF = {
@@ -31,7 +32,11 @@ export const DEF = {
   // itself is not here — it lives per day on the server (store/useDiet.js).
   profile: null, dietTargets: null, dietMeals: null, customFoods: [],
   // A trainer's diet (lib/trainer.js applyTrainerDiet): targets, menu, note. null when none.
-  diet: null
+  diet: null,
+  // A trainer's supplements (lib/trainer.js applyTrainerSupps): what to take, on which days,
+  // how much and how many times a day. null when none. What was ticked is not here — it is
+  // one day at a time on the server (store/useSupp.js).
+  supps: null
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -99,6 +104,7 @@ export const useStore = create((set, get) => {
     localStorage.removeItem('gym_dirty')
     localStorage.removeItem(KEY)
     useDiet.getState().reset()
+    useSupp.getState().reset()
     persist(clone(DEF), false)
   }
 
@@ -177,6 +183,14 @@ export const useStore = create((set, get) => {
         else if (!diet && curDiet && !curDiet.removed) get().update(s => { applyTrainerDiet(s, null) })
         if (diet && !diet.acked && diet.version === get().S.diet?.version) {
           api('/api/trainer/my-diet/ack', { method: 'POST', body: JSON.stringify({ version: diet.version }) }).catch(() => {})
+        }
+        // The supplement list too, same rules.
+        const { supps } = await api('/api/trainer/my-supps')
+        const curSupps = get().S.supps
+        if (supps && supps.version > (curSupps?.version || 0)) get().update(s => { applyTrainerSupps(s, supps); if (user.admin) markSuppsSeen(s) })
+        else if (!supps && curSupps && !curSupps.removed) get().update(s => { applyTrainerSupps(s, null) })
+        if (supps && !supps.acked && supps.version === get().S.supps?.version) {
+          api('/api/trainer/my-supps/ack', { method: 'POST', body: JSON.stringify({ version: supps.version }) }).catch(() => {})
         }
       } catch (e) { /* offline — the next launch tries again */ }
     },
