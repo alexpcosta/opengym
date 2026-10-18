@@ -16,6 +16,7 @@ import {
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, Button, TextArea, Switch, SelectRow } from '../components/ui.jsx'
+import { trainerLocked } from '../lib/trainer.js'
 
 /* The Coach's home: what it's doing, what it's proposing, what it has done before, and every
    switch that turns it off. Deliberately one screen — a feature that edits your training plan
@@ -46,8 +47,8 @@ export default function Coach() {
 
   // Gating lives in one predicate; if the instance isn't offering the Coach this route simply
   // isn't a place you can be.
-  useEffect(() => { if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE })) nav('/home', { replace: true }) }, [config, user])
-  if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE })) return null
+  useEffect(() => { if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, locked: trainerLocked(S) })) nav('/home', { replace: true }) }, [config, user])
+  if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, locked: trainerLocked(S) })) return null
 
   const consented = hasConsent(S)
   const coach = S.coach || emptyCoach()

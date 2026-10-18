@@ -57,6 +57,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## Food composition data
+
+The food diary's offline table (`frontend/src/food/taco.json`, generated from
+`frontend/scripts/taco/taco-4ed.json`) reproduces energy, protein, fat, carbohydrate and fibre
+per 100 g from:
+
+> **Tabela Brasileira de Composição de Alimentos – TACO**, 4ª edição revisada e ampliada.
+> Núcleo de Estudos e Pesquisas em Alimentação (NEPA), Universidade Estadual de Campinas
+> (UNICAMP). Campinas: NEPA-UNICAMP, 2011.
+> "É permitida a reprodução total ou parcial do material, desde que seja citada a fonte."
+
+The Spanish food names are this project's translation, not part of TACO. Their use here does not
+imply endorsement by NEPA or UNICAMP.
+
+Packaged products and barcodes are looked up at runtime in [**Open Food Facts**](https://world.openfoodfacts.org),
+whose database is available under the [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/)
+and its contents under the [Database Contents License](https://opendatacommons.org/licenses/dbcl/1-0/).
+openGym caches answers on the instance and credits the source wherever results are shown.
+
+## Barcode scanning
+
+On browsers without a native `BarcodeDetector`, the scanner uses
+[**barcode-detector**](https://github.com/Sec-ant/barcode-detector) and
+[**zxing-wasm**](https://github.com/Sec-ant/zxing-wasm) by Ze-Zheng Wu (MIT License), which
+bundle [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) (Apache License 2.0) compiled to
+WebAssembly.
+
 ## Exercise data & media
 
 The exercise names, instructions (English in `frontend/src/lib/exercises-data.js`, other

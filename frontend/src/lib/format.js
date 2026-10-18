@@ -45,3 +45,13 @@ export const localTZ = () => { try { return Intl.DateTimeFormat().resolvedOption
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
 export const ACCENTS = { lime: '#30d158', sky: '#0a84ff', orange: '#ff9f0a', violet: '#bf5af2', pink: '#ff375f', red: '#ff453a', teal: '#40c8e0', gold: '#ffd60a' }
+
+// "5m ago" / "3h ago" / "2d ago" — for feeds where the exact time matters less than how fresh it is.
+export function relTime(ts) {
+  if (!ts) return t('never')
+  const s = Math.max(0, (Date.now() - ts) / 1000)
+  if (s < 60) return t('just now')
+  if (s < 3600) return t('{0}m ago', Math.floor(s / 60))
+  if (s < 86400) return t('{0}h ago', Math.floor(s / 3600))
+  return t('{0}d ago', Math.floor(s / 86400))
+}

@@ -15,14 +15,20 @@ self.addEventListener('push', e => {
     icon: 'icon-512.png',
     badge: 'icon-180.png',
     tag: data.tag || 'opengym',
-    renotify: true
+    renotify: true,
+    // Where a tap should land, as a hash route ("#/trainer/s/…"); absent = just open the app.
+    data: { url: typeof data.url === 'string' ? data.url : '' }
   }))
 })
 self.addEventListener('notificationclick', e => {
   e.notification.close()
+  const url = e.notification.data?.url || ''
+  const path = url.startsWith('#') ? url.slice(1) : ''
   e.waitUntil(self.clients.matchAll({ type: 'window' }).then(clients => {
     const c = clients.find(c => 'focus' in c)
-    return c ? c.focus() : self.clients.openWindow('./')
+    // An open window is told where to go (the app routes it, no reload); otherwise open one there.
+    if (c) { if (path) c.postMessage({ type: 'open', path }); return c.focus() }
+    return self.clients.openWindow('./' + (path ? '#' + path : ''))
   }))
 })
 

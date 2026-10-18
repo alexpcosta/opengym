@@ -17,6 +17,7 @@ import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import BodyMap from '../components/BodyMap.jsx'
 import { Button, Check, Switch, TextArea } from '../components/ui.jsx'
+import { trainerLocked } from '../lib/trainer.js'
 
 /* Reviewing what the Coach came back with.
  *
@@ -34,7 +35,7 @@ export default function CoachProposal() {
   const toast = useUI(s => s.toast)
   const { pending, loading, refresh } = useCoachStatus(true)
 
-  useEffect(() => { if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE })) nav('/home', { replace: true }) }, [config, user])
+  useEffect(() => { if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, locked: trainerLocked(S) })) nav('/home', { replace: true }) }, [config, user])
   useEffect(() => { if (!loading && !pending) nav('/coach', { replace: true }) }, [loading, pending])
   if (!pending) return null
 

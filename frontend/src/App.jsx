@@ -27,6 +27,10 @@ import Admin from './views/Admin.jsx'
 import Coach from './views/Coach.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachProposal from './views/CoachProposal.jsx'
+import Trainer from './views/Trainer.jsx'
+import TrainerStudent from './views/TrainerStudent.jsx'
+import TrainerRoutineEdit from './views/TrainerRoutineEdit.jsx'
+import Diet from './views/Diet.jsx'
 
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
@@ -45,6 +49,13 @@ function Shell() {
   const isGuest = useStore(s => s.isGuest())
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
+  // A tapped notification carries where it should land (sw.js posts it to an open window).
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    const onMsg = e => { if (e.data?.type === 'open' && typeof e.data.path === 'string') navigate(e.data.path) }
+    navigator.serviceWorker.addEventListener('message', onMsg)
+    return () => navigator.serviceWorker.removeEventListener('message', onMsg)
+  }, [navigate])
   useEffect(() => { applyPrefs(S.theme, S.accent) }, [S.theme, S.accent])
   useEffect(() => { setLang(S.lang || 'en') }, [S.lang])
   useEffect(() => { document.documentElement.lang = S.lang || 'en' }, [langV, S.lang])
@@ -77,6 +88,7 @@ function Shell() {
               <Route path="/stats" element={<Stats />} />
               <Route path="/history" element={<History />} />
               <Route path="/library" element={<Library />} />
+              <Route path="/diet" element={<Diet />} />
               <Route path="/settings" element={<Settings />} />
               {/* The Coach screens gate themselves on the instance config; the routes exist
                   unconditionally so a deep link from a notification lands somewhere sane
@@ -85,6 +97,9 @@ function Shell() {
               <Route path="/coach/intake" element={<CoachIntake />} />
               <Route path="/coach/proposal" element={<CoachProposal />} />
               <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+              <Route path="/trainer" element={user?.admin ? <Trainer /> : <Navigate to="/home" replace />} />
+              <Route path="/trainer/s/:sid" element={user?.admin ? <TrainerStudent /> : <Navigate to="/home" replace />} />
+              <Route path="/trainer/s/:sid/r/:rid" element={user?.admin ? <TrainerRoutineEdit /> : <Navigate to="/home" replace />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
           )}

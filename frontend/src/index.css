@@ -913,3 +913,30 @@ h4.sec{
   .exmedia img{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
+
+/* ------------------------------------------------------------------ diet -- */
+/* Calories left as a ring, macros as bars — the two numbers people check before a meal. */
+.dsum{display:flex;align-items:center;gap:16px}
+.dring{--v:0;width:96px;height:96px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:conic-gradient(var(--ring,var(--acc)) calc(var(--v) * 1turn),var(--surface-2) 0)}
+.dring>div{width:78px;height:78px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.dring b{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1}
+.dring span{font-size:10px;color:var(--label-3);text-transform:uppercase;letter-spacing:.03em;margin-top:4px}
+.mbars{flex:1;display:flex;flex-direction:column;gap:9px;min-width:0}
+.mbar .l{display:flex;justify-content:space-between;gap:6px;font-size:12px;color:var(--label-2);margin-bottom:4px}
+.mbar .l b{font-weight:500;color:var(--label)}
+.mbar .t{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.mbar .t i{display:block;height:100%;border-radius:99px;transition:width var(--med) var(--ease)}
+.meal-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 2px 8px}
+.meal-h h4{margin:0}
+.food-k{font-variant-numeric:tabular-nums;white-space:nowrap}
+.planned{opacity:.62}
+.planned.done{opacity:1}
+.scanbox{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#000;aspect-ratio:4/3}
+.scanbox video{width:100%;height:100%;object-fit:cover;display:block}
+.scanbox::after{content:'';position:absolute;left:12%;right:12%;top:42%;height:16%;border:2px solid var(--acc);border-radius:10px;pointer-events:none}
+.macro-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.macro-tiles>div{background:var(--surface-2);border-radius:var(--r);padding:8px 6px;text-align:center}
+.macro-tiles b{display:block;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.macro-tiles span{font-size:11px;color:var(--label-2)}
+.chip.raw{text-transform:none}

@@ -11,6 +11,7 @@ import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import Icon from '../components/Icon.jsx'
 import { Button, TextArea, Segmented } from '../components/ui.jsx'
+import { trainerLocked } from '../lib/trainer.js'
 
 /* The intake: one topic per screen, because a single form with eleven fields is a form people
    abandon. Only the first two questions are required — everything after them improves the
@@ -58,7 +59,7 @@ export default function CoachIntake() {
   }))
   const set = patch => setP(v => ({ ...v, ...patch }))
 
-  if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE })) { nav('/home', { replace: true }); return null }
+  if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, locked: trainerLocked(S) })) { nav('/home', { replace: true }); return null }
 
   const key = STEPS[step]
   const canNext = key !== 'goal' || (p.goal && p.experience)

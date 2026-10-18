@@ -1,0 +1,593 @@
+1|Arroz, integral, cocido
+2|Arroz, integral, crudo
+3|Arroz, tipo 1, cocido
+4|Arroz, tipo 1, crudo
+5|Arroz, tipo 2, cocido
+6|Arroz, tipo 2, crudo
+7|Avena, copos, cruda
+8|Galletita, dulce, tipo maría
+9|Galletita, dulce, rellena de chocolate
+10|Galletita, dulce, rellena de frutilla
+11|Galletita, oblea, rellena de chocolate
+12|Galletita, oblea, rellena de frutilla
+13|Galletita, salada, tipo cracker
+14|Bizcochuelo, premezcla
+15|Torta, lista, de mandioca
+16|Torta, lista, de chocolate
+17|Torta, lista, de coco
+18|Torta, lista, de maíz
+19|Maíz blanco pisado (mazamorra), crudo
+20|Mazamorra, con leche entera
+21|Copos de maíz, con sal
+22|Copos de maíz, sin sal
+23|Papilla de maíz, infantil
+24|Cereales para licuado, trigo, cebada y avena
+25|Cereal de desayuno, maíz
+26|Cereal de desayuno, maíz, azucarado
+27|Crema de arroz, en polvo
+28|Crema de maíz, en polvo
+29|Crema de choclo (curau)
+30|Crema de choclo (curau), premezcla
+31|Harina de arroz, enriquecida
+32|Harina de centeno, integral
+33|Harina de maíz, amarilla
+34|Pan rallado
+35|Harina de trigo
+36|Harina láctea de cereales
+37|Lasaña, masa fresca, cocida
+38|Lasaña, masa fresca, cruda
+39|Fideos instantáneos
+40|Fideos de trigo, crudos
+41|Fideos de trigo al huevo, crudos
+42|Almidón de maíz (maicena), crudo
+43|Harina de maíz (fubá), cruda
+44|Choclo, crudo
+45|Choclo, enlatado, escurrido
+46|Papilla tradicional, en polvo
+47|Humita (pamonha), precocida
+48|Pan de avena, de molde
+49|Pan de soja
+50|Pan de gluten, de molde
+51|Pan de maíz, de molde
+52|Pan de trigo integral, de molde
+53|Pan francés
+54|Pan de trigo, sobado
+55|Empanada frita (pastel) de carne, cruda
+56|Empanada frita (pastel) de carne, frita
+57|Empanada frita (pastel) de queso, cruda
+58|Empanada frita (pastel) de queso, frita
+59|Masa de empanada (pastel), cruda
+60|Masa de empanada (pastel), frita
+61|Pororó (pochoclo), con aceite de soja, sin sal
+62|Polenta, precocida
+63|Tostada de pan francés
+64|Zapallo cabutia, cocido
+65|Zapallo cabutia, crudo
+66|Zapallo criollo, crudo
+67|Zapallo calabaza, crudo
+68|Zapallo calabaza, salteado
+69|Zapallo anco (cuello), crudo
+70|Zapallito italiano, cocido
+71|Zapallito italiano, crudo
+72|Zapallito italiano, salteado
+73|Zapallito paulista, crudo
+74|Acelga, cruda
+75|Berro, crudo
+76|Apio, crudo
+77|Lechuga, americana (repollada), cruda
+78|Lechuga, crespa, cruda
+79|Lechuga, lisa, cruda
+80|Lechuga, morada, cruda
+81|Albahaca morada (alfavaca), cruda
+82|Ajo, crudo
+83|Puerro, crudo
+84|Achicoria (almeirão), cruda
+85|Achicoria (almeirão), salteada
+86|Arracacha (mandioquinha), cocida
+87|Arracacha (mandioquinha), cruda
+88|Batata (boniato), cocida
+89|Batata (boniato), cruda
+90|Papas fritas tipo chips, industrializadas
+91|Papa, cocida
+92|Papa, cruda
+93|Papa, frita
+94|Papa, salteada
+95|Berenjena, cocida
+96|Berenjena, cruda
+97|Remolacha, cocida
+98|Remolacha, cruda
+99|Galletita de almidón (polvilho), dulce
+100|Brócoli, cocido
+101|Brócoli, crudo
+102|Ñame (cará), cocido
+103|Ñame (cará), crudo
+104|Bledo (caruru), crudo
+105|Achicoria catalana, cruda
+106|Achicoria catalana, salteada
+107|Cebolla, cruda
+108|Cebollita de verdeo, cruda
+109|Zanahoria, cocida
+110|Zanahoria, cruda
+111|Escarola, cruda
+112|Chayote, cocido
+113|Chayote, crudo
+114|Cilantro, hojas deshidratadas
+115|Col (couve), cruda
+116|Col (couve), salteada
+117|Coliflor, cruda
+118|Coliflor, cocida
+119|Espinaca de Nueva Zelanda, cruda
+120|Espinaca de Nueva Zelanda, salteada
+121|Harina de mandioca, cruda
+122|Harina de mandioca, tostada
+123|Harina de mandioca fermentada (puba)
+124|Fécula de mandioca
+125|Brotes de soja (poroto mung), crudos
+126|Taro (inhame), crudo
+127|Jiló, crudo
+128|Jurubeba, cruda
+129|Mandioca, cocida
+130|Mandioca, cruda
+131|Farofa de mandioca, condimentada
+132|Mandioca, frita
+133|Albahaca, cruda
+134|Pepino del monte (maxixe), crudo
+135|Mostaza, hoja, cruda
+136|Ñoquis de papa, cocidos
+137|Nabo, crudo
+138|Palmito juçara, en conserva
+139|Palmito pupunha, en conserva
+140|Pan de queso, horneado
+141|Pan de queso, crudo
+142|Pepino, crudo
+143|Morrón amarillo, crudo
+144|Morrón verde, crudo
+145|Morrón rojo, crudo
+146|Almidón de mandioca, dulce
+147|Quimbombó (okra), crudo
+148|Rabanito, crudo
+149|Repollo blanco, crudo
+150|Repollo morado, crudo
+151|Repollo morado, salteado
+152|Rúcula, cruda
+153|Perejil, crudo
+154|Ensalada de verduras, enlatada
+155|Cerraja, cruda
+156|Taioba, cruda
+157|Tomate, con semillas, crudo
+158|Extracto de tomate
+159|Salsa de tomate, industrializada
+160|Puré de tomate
+161|Tomate perita (para ensalada)
+162|Chaucha, cruda
+163|Aguacate (palta), crudo
+164|Piña (ananá), cruda
+165|Piña (ananá), pulpa congelada
+166|Abiu, crudo
+167|Açaí, pulpa, con jarabe de guaraná y glucosa
+168|Açaí, pulpa congelada
+169|Acerola, cruda
+170|Acerola, pulpa congelada
+171|Ciruela en almíbar, enlatada
+172|Ciruela, cruda
+173|Ciruela en almíbar, enlatada, escurrida
+174|Atemoya, cruda
+175|Banana de la tierra (plátano), cruda
+176|Dulce de banana en barra
+177|Banana figo, cruda
+178|Banana manzana, cruda
+179|Banana nanica (cavendish), cruda
+180|Banana oro, cruda
+181|Banana pacova, cruda
+182|Banana prata, cruda
+183|Cacao, crudo
+184|Cajá-manga, crudo
+185|Cajá, pulpa congelada
+186|Cajú (fruto), crudo
+187|Cajú, pulpa congelada
+188|Jugo concentrado de cajú, envasado
+189|Caqui chocolate, crudo
+190|Carambola, cruda
+191|Ciruela tropical (ciriguela), cruda
+192|Cupuaçu, crudo
+193|Cupuaçu, pulpa congelada
+194|Higo, crudo
+195|Higo en almíbar, enlatado
+196|Fruta del pan, cruda
+197|Guayaba blanca, con cáscara, cruda
+198|Dulce de guayaba en pasta
+199|Dulce de cáscara de guayaba
+200|Guayaba roja, con cáscara, cruda
+201|Guanábana, cruda
+202|Guanábana, pulpa congelada
+203|Jabuticaba, cruda
+204|Jaca, cruda
+205|Pomarrosa (jambo), cruda
+206|Jambolán, crudo
+207|Kiwi, crudo
+208|Naranja de ombligo, cruda
+209|Naranja de ombligo, jugo
+210|Naranja criolla, cruda
+211|Naranja criolla, jugo
+212|Lima dulce, cruda
+213|Lima dulce, jugo
+214|Naranja pera, cruda
+215|Naranja pera, jugo
+216|Naranja valencia, cruda
+217|Naranja valencia, jugo
+218|Limón mandarina (cravo), jugo
+219|Limón sutil (galego), jugo
+220|Limón tahití, crudo
+221|Manzana argentina, con cáscara, cruda
+222|Manzana fuji, con cáscara, cruda
+223|Macaúba (mbokaja), cruda
+224|Mamón en almíbar, escurrido
+225|Mamón formosa, crudo
+226|Mamón papaya, crudo
+227|Mamón verde en almíbar, escurrido
+228|Mango haden, crudo
+229|Mango palmer, crudo
+230|Mango, pulpa congelada
+231|Mango tommy atkins, crudo
+232|Mburucuyá (maracuyá), crudo
+233|Mburucuyá (maracuyá), pulpa congelada
+234|Jugo concentrado de mburucuyá, envasado
+235|Sandía, cruda
+236|Melón, crudo
+237|Mandarina murcott, cruda
+238|Mandarina común, cruda
+239|Frutilla, cruda
+240|Níspero, crudo
+241|Pequi, crudo
+242|Pera park, cruda
+243|Pera williams, cruda
+244|Durazno aurora, crudo
+245|Durazno en almíbar, enlatado
+246|Ata (chirimoya), cruda
+247|Pitanga, cruda
+248|Pitanga, pulpa congelada
+249|Granada, cruda
+250|Tamarindo, crudo
+251|Mandarina ponkan, cruda
+252|Mandarina ponkan, jugo
+253|Tucumá, crudo
+254|Umbú, crudo
+255|Umbú, pulpa congelada
+256|Uva italia, cruda
+257|Uva rubí, cruda
+258|Jugo concentrado de uva, envasado
+259|Aceite de palma (dendê)
+260|Aceite de oliva, extra virgen
+261|Manteca, con sal
+262|Manteca, sin sal
+263|Margarina, con aceite hidrogenado, con sal (65% de grasa)
+264|Margarina, con aceite hidrogenado, sin sal (80% de grasa)
+265|Margarina, con aceite interesterificado, con sal (65% de grasa)
+266|Margarina, con aceite interesterificado, sin sal (65% de grasa)
+267|Aceite de babasú
+268|Aceite de canola
+269|Aceite de girasol
+270|Aceite de maíz
+271|Aceite de pequi
+272|Aceite de soja
+273|Abadejo, filete, congelado, al horno
+274|Abadejo, filete, congelado, hervido
+275|Abadejo, filete, congelado, crudo
+276|Abadejo, filete, congelado, a la plancha
+277|Atún en aceite, en conserva
+278|Atún fresco, crudo
+279|Bacalao salado, crudo
+280|Bacalao salado, salteado
+281|Cazón, rodaja, rebozada con harina, frita
+282|Cazón, rodaja, hervida
+283|Cazón, rodaja, cruda
+284|Camarón grande (Rio Grande), cocido
+285|Camarón grande (Rio Grande), crudo
+286|Camarón siete barbas, sin cabeza, con cáscara, frito
+287|Cangrejo, cocido
+288|Curimbatá (sábalo), crudo
+289|Curimbatá (sábalo), al horno
+290|Curimbatá (sábalo), hervido
+291|Corvina de agua dulce, cruda
+292|Corvina de mar, cruda
+293|Corvina grande, al horno
+294|Corvina grande, hervida
+295|Dorado de agua dulce, fresco
+296|Mojarra (lambari), congelada, cruda
+297|Mojarra (lambari), congelada, frita
+298|Mojarra (lambari), fresca, cruda
+299|Anchoíta (manjuba), rebozada con harina, frita
+300|Anchoíta (manjuba), frita
+301|Merluza, filete, al horno
+302|Merluza, filete, cruda
+303|Merluza, filete, frita
+304|Pescadilla blanca, cruda
+305|Pescadilla blanca, frita
+306|Pescadilla, filete, rebozado con harina, frito
+307|Pescadilla, filete, crudo
+308|Pescadilla, filete, frito
+309|Pescadilla, filete, en escabeche
+310|Pescadilla chica, cruda
+311|Surubí (pintado), al horno
+312|Surubí (pintado), crudo
+313|Surubí (pintado), a la plancha
+314|Pez ballesta (porquinho), crudo
+315|Salmón, filete, con piel, fresco, a la plancha
+316|Salmón, sin piel, fresco, crudo
+317|Salmón, sin piel, fresco, a la plancha
+318|Sardina, asada
+319|Sardina en aceite, en conserva
+320|Sardina, frita
+321|Sardina, entera, cruda
+322|Tucunaré, filete, congelado, crudo
+323|Fiambre de cerdo (tipo jamón cocido)
+324|Caldo de carne, en cubo
+325|Caldo de gallina, en cubo
+326|Carne vacuna, aguja, molida, cocida
+327|Carne vacuna, aguja, molida, cruda
+328|Carne vacuna, aguja, sin grasa, cocida
+329|Carne vacuna, aguja, sin grasa, cruda
+330|Carne vacuna, albóndigas, crudas
+331|Carne vacuna, albóndigas, fritas
+332|Carne vacuna, mondongo, cocido
+333|Carne vacuna, mondongo, crudo
+334|Carne vacuna, tapa de bife angosto, con grasa, cruda
+335|Carne vacuna, tapa de bife angosto, con grasa, a la plancha
+336|Carne vacuna, tapa de bife angosto, sin grasa, cruda
+337|Carne vacuna, tapa de bife angosto, sin grasa, a la plancha
+338|Carne vacuna, charque, cocido
+339|Carne vacuna, charque, crudo
+340|Carne vacuna, bife angosto, a la milanesa
+341|Carne vacuna, bife ancho, crudo
+342|Carne vacuna, bife ancho, a la plancha
+343|Carne vacuna, bife angosto, con grasa, crudo
+344|Carne vacuna, bife angosto, con grasa, a la plancha
+345|Carne vacuna, bife angosto, sin grasa, crudo
+346|Carne vacuna, bife angosto, sin grasa, a la plancha
+347|Carne vacuna, costilla, asada
+348|Carne vacuna, costilla, cruda
+349|Carne vacuna, cuadrada (coxão duro), sin grasa, cocida
+350|Carne vacuna, cuadrada (coxão duro), sin grasa, cruda
+351|Carne vacuna, nalga (coxão mole), sin grasa, cocida
+352|Carne vacuna, nalga (coxão mole), sin grasa, cruda
+353|Carne vacuna, giba (cupim), asada
+354|Carne vacuna, giba (cupim), cruda
+355|Carne vacuna, hígado, crudo
+356|Carne vacuna, hígado, a la plancha
+357|Carne vacuna, lomo (filet mignon), sin grasa, crudo
+358|Carne vacuna, lomo (filet mignon), sin grasa, a la plancha
+359|Carne vacuna, falda, sin grasa, cocida
+360|Carne vacuna, falda, sin grasa, cruda
+361|Carne vacuna, vacío, con grasa, cocido
+362|Carne vacuna, vacío, con grasa, crudo
+363|Carne vacuna, peceto (tortuguita), cocido
+364|Carne vacuna, peceto (tortuguita), crudo
+365|Carne vacuna, lengua, cocida
+366|Carne vacuna, lengua, cruda
+367|Carne vacuna, colita de cuadril, cruda
+368|Carne vacuna, colita de cuadril, a la plancha
+369|Carne vacuna, corazón de cuadril, sin grasa, crudo
+370|Carne vacuna, corazón de cuadril, sin grasa, a la plancha
+371|Carne vacuna, garrón (músculo), sin grasa, cocido
+372|Carne vacuna, garrón (músculo), sin grasa, crudo
+373|Carne vacuna, paleta, con grasa, cruda
+374|Carne vacuna, paleta, sin grasa, cocida
+375|Carne vacuna, paleta, sin grasa, cruda
+376|Carne vacuna, bola de lomo, sin grasa, cruda
+377|Carne vacuna, bola de lomo, sin grasa, a la plancha
+378|Carne vacuna, pecho, sin grasa, cocido
+379|Carne vacuna, pecho, sin grasa, crudo
+380|Carne vacuna, picaña, con grasa, cruda
+381|Carne vacuna, picaña, con grasa, a la plancha
+382|Carne vacuna, picaña, sin grasa, cruda
+383|Carne vacuna, picaña, sin grasa, a la plancha
+384|Carne vacuna seca (carne de sol), cocida
+385|Carne vacuna seca (carne de sol), cruda
+386|Croqueta de pollo (coxinha), frita
+387|Croqueta de carne, cruda
+388|Croqueta de carne, frita
+389|Empanada de pollo (empada), precocida, horneada
+390|Empanada de pollo (empada), precocida
+391|Pollo, ala, con piel, cruda
+392|Pollo casero, entero, con piel, cocido
+393|Pollo casero, entero, sin piel, cocido
+394|Pollo, corazón, crudo
+395|Pollo, corazón, a la plancha
+396|Pollo, muslo, con piel, al horno
+397|Pollo, muslo, con piel, crudo
+398|Pollo, muslo, sin piel, cocido
+399|Pollo, muslo, sin piel, crudo
+400|Pollo, hígado, crudo
+401|Pollo, filete, a la milanesa
+402|Pollo, entero, con piel, crudo
+403|Pollo, entero, sin piel, al horno
+404|Pollo, entero, sin piel, cocido
+405|Pollo, entero, sin piel, crudo
+406|Pollo, pechuga, con piel, al horno
+407|Pollo, pechuga, con piel, cruda
+408|Pollo, pechuga, sin piel, cocida
+409|Pollo, pechuga, sin piel, cruda
+410|Pollo, pechuga, sin piel, a la plancha
+411|Pollo, contramuslo, con piel, al horno
+412|Pollo, contramuslo, con piel, crudo
+413|Pollo, contramuslo, sin piel, al horno
+414|Pollo, contramuslo, sin piel, crudo
+415|Hamburguesa de carne vacuna, cruda
+416|Hamburguesa de carne vacuna, frita
+417|Hamburguesa de carne vacuna, a la plancha
+418|Chorizo de pollo, crudo
+419|Chorizo de pollo, frito
+420|Chorizo de pollo, a la parrilla
+421|Chorizo de cerdo, crudo
+422|Chorizo de cerdo, frito
+423|Chorizo de cerdo, a la parrilla
+424|Mortadela
+425|Pavo, congelado, al horno
+426|Pavo, congelado, crudo
+427|Cerdo, chuleta, cruda
+428|Cerdo, chuleta, frita
+429|Cerdo, chuleta, a la plancha
+430|Cerdo, costilla, asada
+431|Cerdo, costilla, cruda
+432|Cerdo, lomo, al horno
+433|Cerdo, lomo, crudo
+434|Cerdo, oreja, salada, cruda
+435|Cerdo, pernil, al horno
+436|Cerdo, pernil, crudo
+437|Cerdo, rabo, salado, crudo
+438|Jamón cocido, con grasa
+439|Jamón cocido, sin grasa
+440|Kibbe (quibe), al horno
+441|Kibbe (quibe), crudo
+442|Kibbe (quibe), frito
+443|Salame
+444|Tocino, crudo
+445|Tocino, frito
+446|Bebida láctea, sabor durazno
+447|Crema de leche
+448|Yogur natural
+449|Yogur natural, descremado
+451|Yogur, sabor frutilla
+452|Yogur, sabor durazno
+453|Leche condensada
+454|Leche de cabra
+455|Leche chocolatada
+456|Leche descremada en polvo
+459|Leche entera en polvo
+460|Leche fermentada
+461|Queso fresco (minas frescal)
+462|Queso semiduro (minas meia cura)
+463|Queso mozzarella
+464|Queso parmesano
+465|Queso fundido (pasteurizado)
+466|Queso petit suisse, frutilla
+467|Queso de máquina (prato)
+468|Queso crema untable (requeijão)
+469|Ricota
+470|Bebida isotónica, sabores variados
+471|Café, infusión al 10%
+472|Caña (aguardiente)
+473|Jugo de caña de azúcar (mosto)
+474|Cerveza pilsen
+475|Té de anís, infusión al 5%
+476|Mate cocido, infusión al 5%
+477|Té negro, infusión al 5%
+478|Agua de coco
+479|Gaseosa, tipo agua tónica
+480|Gaseosa, tipo cola
+481|Gaseosa, tipo guaraná
+482|Gaseosa, tipo naranja
+483|Gaseosa, tipo limón
+484|Omelette de queso
+485|Huevo de codorniz, entero, crudo
+486|Huevo de gallina, clara, cocida (10 minutos)
+487|Huevo de gallina, yema, cocida (10 minutos)
+488|Huevo de gallina, entero, cocido (10 minutos)
+489|Huevo de gallina, entero, crudo
+490|Huevo de gallina, entero, frito
+491|Cacao en polvo azucarado (chocolatada)
+492|Azúcar cristal
+493|Azúcar mascabo
+494|Azúcar refinada
+495|Chocolate con leche
+496|Chocolate con leche, con castañas de Pará
+497|Chocolate con leche, dietético
+498|Chocolate semiamargo
+499|Cocada blanca
+500|Dulce de zapallo, cremoso
+501|Dulce de leche, cremoso
+502|Gelatina de mocotó (pata vacuna), natural
+503|Jarabe de glucosa de maíz
+504|Merengue tipo maria mole
+505|Merengue tipo maria mole, coco tostado
+506|Dulce de membrillo
+507|Miel de abeja
+508|Melaza de caña
+509|Quindim (dulce de yema y coco)
+510|Raspadura (panela)
+511|Café molido, tostado
+512|Capuchino, en polvo
+513|Polvo de hornear
+514|Levadura fresca, en pan
+515|Gelatina, sabores variados, en polvo
+516|Sal dietética
+517|Sal gruesa
+518|Salsa de soja
+519|Condimento a base de sal
+520|Aceitunas negras, en conserva
+521|Aceitunas verdes, en conserva
+522|Crema chantilly en aerosol, con grasa vegetal
+523|Leche de coco
+524|Mayonesa tradicional, con huevo
+525|Acarajé (buñuelo de poroto)
+526|Arroz carretero (arroz con charque)
+527|Baião de dois (arroz con poroto)
+528|Barreado (guiso de carne)
+529|Bife a caballo, con bife angosto
+530|Buñuelo de arroz
+531|Camarones a la bahiana
+532|Niños envueltos de repollo
+533|Cuscús de maíz, cocido con sal
+534|Cuscús paulista
+535|Salsa cuxá
+536|Mondongo (dobradinha)
+537|Strogonoff de carne
+538|Strogonoff de pollo
+539|Feijão tropeiro (poroto con harina de mandioca)
+540|Feijoada (guiso de poroto negro)
+541|Pollo con azafrán
+542|Fideos con salsa boloñesa
+543|Maniçoba
+544|Quibebe (puré de zapallo)
+545|Ensalada de verduras con mayonesa (rusa)
+546|Ensalada de verduras al vapor
+547|Salpicón de pollo
+548|Sarapatel
+549|Tabulé
+550|Tacacá
+551|Tapioca con manteca
+552|Tucupí con pimienta
+553|Vaca atolada (costilla con mandioca)
+554|Vatapá
+555|Virado a la paulista
+556|Yakisoba
+557|Maní, crudo
+558|Maní, tostado, salado
+559|Arveja, en vaina
+560|Arveja, enlatada, escurrida
+561|Poroto carioca, cocido
+562|Poroto carioca, crudo
+563|Poroto ojo negro (fradinho), cocido
+564|Poroto ojo negro (fradinho), crudo
+565|Poroto jalo, cocido
+566|Poroto jalo, crudo
+567|Poroto negro, cocido
+568|Poroto negro, crudo
+569|Poroto rajado, cocido
+570|Poroto rajado, crudo
+571|Poroto rosado, cocido
+572|Poroto rosado, crudo
+573|Poroto morado, cocido
+574|Poroto morado, crudo
+575|Garbanzo, crudo
+576|Guandú, crudo
+577|Lenteja, cocida
+578|Lenteja, cruda
+579|Dulce de maní (paçoca)
+580|Garrapiñada en barra (pé-de-moleque)
+581|Harina de soja
+582|Bebida de soja, natural
+583|Bebida de soja, en polvo
+584|Queso de soja (tofu)
+585|Lupino (altramuz), crudo
+586|Lupino (altramuz), en conserva
+587|Almendra, tostada, salada
+588|Castaña de cajú, tostada, salada
+589|Castaña de Pará, cruda
+590|Coco, crudo
+592|Harina de mesocarpio de babasú, cruda
+593|Sésamo, semilla
+594|Lino, semilla
+595|Piñón, cocido
+596|Pupunha, cocida
+597|Nuez, cruda

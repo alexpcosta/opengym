@@ -133,6 +133,14 @@ export default function Admin() {
       </div>)}
     </div>}
 
+    <div className="card tappable" style={{ cursor: 'pointer' }} onClick={() => nav('/trainer')}>
+      <div className="row between">
+        <div><h2 style={{ margin: 0 }}>Students</h2>
+          <div className="small muted">Training plans, workout feed and notifications — trainer mode.</div></div>
+        <Icon name="chevronRight" className="chev" />
+      </div>
+    </div>
+
     <AdminCoach />
 
     <InvitesCard invites={invites} reload={loadInvites} />
