@@ -4,6 +4,9 @@ import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
+import { applyTrainerPlan, applyTrainerDiet, applyTrainerSupps, markPlanSeen, markDietSeen, markSuppsSeen } from '../lib/trainer.js'
+import { useDiet } from './useDiet.js'
+import { useSupp } from './useSupp.js'
 
 const KEY = 'gym_state_v1'
 export const DEF = {
@@ -19,7 +22,21 @@ export const DEF = {
   // AI Coach (issue: AI enablement). null until the profile opts in — a null namespace is the
   // same app it was before the feature existed, which is what Epic F asks for. Shape and
   // bounds live in lib/coach.js.
-  coach: null
+  coach: null,
+  // Trainer mode (lib/trainer.js): the version and routine ids of the plan a trainer sent this
+  // profile, null when there is none. `tz` is this device's zone, stamped on every launch so
+  // the server's daily checks ("skipped a planned workout") run on the student's own clock.
+  trainer: null, tz: null,
+  // Diet (lib/nutrition.js): the body data the targets are calculated from, the targets the
+  // student chose (null = not set up), their meal names, and foods they created. The diary
+  // itself is not here — it lives per day on the server (store/useDiet.js).
+  profile: null, dietTargets: null, dietMeals: null, customFoods: [],
+  // A trainer's diet (lib/trainer.js applyTrainerDiet): targets, menu, note. null when none.
+  diet: null,
+  // A trainer's supplements (lib/trainer.js applyTrainerSupps): what to take, on which days,
+  // how much and how many times a day. null when none. What was ticked is not here — it is
+  // one day at a time on the server (store/useSupp.js).
+  supps: null
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -36,6 +53,7 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 export const useStore = create((set, get) => {
   let pushTm = null
   let saveTm = null
+  let trainerPulledAt = 0
 
   // Mobile build: mirror the state into a file in the app's data directory (survives WebView
   // storage eviction) and keep the native reminder schedule in step with the weekly plan.
@@ -74,12 +92,19 @@ export const useStore = create((set, get) => {
     }
   })
 
+  // Coming back to the app is when a trainer's update is most likely waiting.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') get().pullTrainer()
+  })
+
   // Everything a sign-out leaves behind on this device, whichever way it was triggered.
   const clearLocalSession = () => {
     get().setUser(null)
     localStorage.removeItem('gym_guest')
     localStorage.removeItem('gym_dirty')
     localStorage.removeItem(KEY)
+    useDiet.getState().reset()
+    useSupp.getState().reset()
     persist(clone(DEF), false)
   }
 
@@ -127,6 +152,47 @@ export const useStore = create((set, get) => {
           persist(next, false)
         } else if (hasData(S)) { await get().pushState() }
       } catch (e) { /* offline — keep local */ }
+    },
+
+    // Trainer mode: fetch the plan a trainer wrote for this profile and apply it when it is
+    // newer than what this device has. A trainer can write one for themselves too — then
+    // there is no "your trainer updated" banner, they wrote it.
+    // At most every few minutes unless forced (boot), since visibility changes are frequent.
+    async pullTrainer(force = false) {
+      const user = get().user
+      if (!user) return
+      if (!force && Date.now() - trainerPulledAt < 5 * 60000) return
+      trainerPulledAt = Date.now()
+      try {
+        const { plan } = await api('/api/trainer/my-plan')
+        const cur = get().S.trainer
+        if (plan && plan.version > (cur?.version || 0)) {
+          get().update(s => { applyTrainerPlan(s, plan); if (user.admin) markPlanSeen(s) })
+        } else if (!plan && cur?.rids?.length) {
+          // The server no longer has a plan for us at all (data reset): unlock rather than
+          // keep routines nobody can edit.
+          get().update(s => { applyTrainerPlan(s, null) })
+        }
+        if (plan && !plan.acked && plan.version === get().S.trainer?.version) {
+          api('/api/trainer/my-plan/ack', { method: 'POST', body: JSON.stringify({ version: plan.version }) }).catch(() => {})
+        }
+        // The diet travels the same way, and is applied the same way.
+        const { diet } = await api('/api/trainer/my-diet')
+        const curDiet = get().S.diet
+        if (diet && diet.version > (curDiet?.version || 0)) get().update(s => { applyTrainerDiet(s, diet); if (user.admin) markDietSeen(s) })
+        else if (!diet && curDiet && !curDiet.removed) get().update(s => { applyTrainerDiet(s, null) })
+        if (diet && !diet.acked && diet.version === get().S.diet?.version) {
+          api('/api/trainer/my-diet/ack', { method: 'POST', body: JSON.stringify({ version: diet.version }) }).catch(() => {})
+        }
+        // The supplement list too, same rules.
+        const { supps } = await api('/api/trainer/my-supps')
+        const curSupps = get().S.supps
+        if (supps && supps.version > (curSupps?.version || 0)) get().update(s => { applyTrainerSupps(s, supps); if (user.admin) markSuppsSeen(s) })
+        else if (!supps && curSupps && !curSupps.removed) get().update(s => { applyTrainerSupps(s, null) })
+        if (supps && !supps.acked && supps.version === get().S.supps?.version) {
+          api('/api/trainer/my-supps/ack', { method: 'POST', body: JSON.stringify({ version: supps.version }) }).catch(() => {})
+        }
+      } catch (e) { /* offline — the next launch tries again */ }
     },
 
     async signOut() {
@@ -186,11 +252,12 @@ export const useStore = create((set, get) => {
         const me = await api('/api/me')
         get().setUser(me.user)
         await get().pullState()
-        // Re-stamp the reminder's timezone on every load — keeps it correct if you're travelling,
-        // without needing to revisit Settings.
+        await get().pullTrainer(true)
+        // Re-stamp the timezone on every load — keeps the reminder (and a trainer's daily
+        // checks) correct if you're travelling, without needing to revisit Settings.
         const tz = localTZ()
-        if (get().S.reminder?.on && get().S.reminder.tz !== tz) {
-          get().update(s => { s.reminder = { ...s.reminder, tz } })
+        if (get().S.tz !== tz || (get().S.reminder?.on && get().S.reminder.tz !== tz)) {
+          get().update(s => { s.tz = tz; if (s.reminder?.on) s.reminder = { ...s.reminder, tz } })
         }
       } catch (e) {
         if (e.status === 401) get().setUser(null)

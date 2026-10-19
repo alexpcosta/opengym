@@ -40,8 +40,10 @@ const coachOf = s => (s.coach = s.coach || emptyCoach())
 // account, but it does have a canned provider (lib/coach-demo.js), and hiding the app's most
 // interesting feature from the page people are sent to look at it on would be a strange
 // choice. The mobile build stays out — there is no server there to fake anything with.
-export const coachAvailable = (config, user, { demo, mobile } = {}) =>
-  mobile ? false : demo ? true : !!(config?.coach?.enabled && user)
+// `locked`: a trainer's plan is active (lib/trainer.js). The Coach would be proposing changes
+// to routines the student is not allowed to edit, so it steps aside until the plan is removed.
+export const coachAvailable = (config, user, { demo, mobile, locked } = {}) =>
+  mobile || locked ? false : demo ? true : !!(config?.coach?.enabled && user)
 export const hasConsent = S => !!S?.coach?.consent?.agreedAt && S.coach.consent.version === CONSENT_VERSION
 
 /* ============================ plan fingerprint ============================ */

@@ -23,6 +23,12 @@ export function registerCustom(list) {
   customIds = (list || []).map(e => e.id)
   ;(list || []).forEach(e => { EXIDX[e.id] = e })
 }
+// Exercises that belong to someone else's plan — a trainer opening a student's routines, which
+// may use the student's own custom exercises. Resolvable by id while it is on screen, never
+// added to this profile's list, and never overriding an id that already resolves.
+export function registerForeign(list) {
+  ;(list || []).forEach(e => { if (e && e.id && !EXIDX[e.id]) EXIDX[e.id] = { tg: '', eq: 'custom', ...e, custom: true } })
+}
 // Full searchable catalogue — customs first so your own exercises are easy to find.
 export const allExercises = st => [...(st.customEx || []), ...EXDB]
 

@@ -45,6 +45,10 @@ jobs:
         working-directory: frontend
       - run: node scripts/check-locales.mjs
         working-directory: frontend
+      # The diet diary's food table is generated from the TACO data and the Spanish names
+      # committed next to it; an edit to either that forgets to regenerate fails here.
+      - run: node scripts/build-taco.mjs --check
+        working-directory: frontend
 
   api:
     runs-on: ubuntu-latest

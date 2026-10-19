@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutine, effectiveRoutineId, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
@@ -10,6 +10,14 @@ import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { coachAvailable, hasConsent } from '../lib/coach.js'
+import { trainerLocked, trainerPlanUnseen, markPlanSeen, dietUnseen, markDietSeen } from '../lib/trainer.js'
+import { useSupp } from '../store/useSupp.js'
+import { suppsOf, suppUnseen, suppAvailable, dayStatus, weekdayOf } from '../lib/supp.js'
+import { fetchUnread } from '../lib/trainer-api.js'
+import { useDiet } from '../store/useDiet.js'
+import { dietAvailable, targetsOf } from '../lib/diet.js'
+import { sumEntries, toKg } from '../lib/nutrition.js'
+import { DietSummary } from './Diet.jsx'
 import { useCoachStatus } from '../lib/coach-api.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -39,6 +47,122 @@ function CoachCard({ nav }) {
   </div>
 }
 
+// Student side: the trainer sent a new version of the plan. One tap to look, and it's gone.
+function TrainerPlanCard({ nav }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  if (!trainerPlanUnseen(S)) return null
+  return <div className="card" style={{ borderColor: 'var(--acc)' }}>
+    <div className="today-row" style={{ marginTop: 0 }} onClick={() => { update(s => { markPlanSeen(s) }); nav('/plan') }}>
+      <div className="row" style={{ gap: 9, minWidth: 0 }}>
+        <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="clipboard" /></span>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2">{S.trainer.by || t('Your trainer')}</div>
+          <div className="ttl">{t('Your trainer updated your plan')}</div>
+          {S.trainer.note && <div className="small muted" style={{ whiteSpace: 'pre-wrap', marginTop: 2 }}>{S.trainer.note}</div>}
+        </div>
+      </div>
+      <span className="tag acc">{t('See')}</span>
+    </div>
+  </div>
+}
+
+// The same for a new or changed diet from the trainer.
+function TrainerDietCard({ nav }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  if (!dietUnseen(S)) return null
+  return <div className="card" style={{ borderColor: 'var(--acc)' }}>
+    <div className="today-row" style={{ marginTop: 0 }} onClick={() => { update(s => { markDietSeen(s) }); nav('/diet') }}>
+      <div className="row" style={{ gap: 9, minWidth: 0 }}>
+        <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="flame" /></span>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2">{S.diet.by || t('Your trainer')}</div>
+          <div className="ttl">{t('Your trainer updated your diet')}</div>
+          {S.diet.note && <div className="small muted" style={{ whiteSpace: 'pre-wrap', marginTop: 2 }}>{S.diet.note}</div>}
+        </div>
+      </div>
+      <span className="tag acc">{t('See')}</span>
+    </div>
+  </div>
+}
+
+// The same for a new or changed supplement list.
+function TrainerSuppsCard({ nav }) {
+  const S = useStore(s => s.S)
+  if (!suppUnseen(S)) return null
+  return <div className="card" style={{ borderColor: 'var(--acc)' }}>
+    <div className="today-row" style={{ marginTop: 0 }} onClick={() => nav('/supps')}>
+      <div className="row" style={{ gap: 9, minWidth: 0 }}>
+        <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="capsule" /></span>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2">{S.supps.by || t('Your trainer')}</div>
+          <div className="ttl">{t('Your trainer updated your supplements')}</div>
+          {S.supps.note && <div className="small muted" style={{ whiteSpace: 'pre-wrap', marginTop: 2 }}>{S.supps.note}</div>}
+        </div>
+      </div>
+      <span className="tag acc">{t('See')}</span>
+    </div>
+  </div>
+}
+
+// Today's doses, while any are still unticked — the one nudge the student needs to see here.
+function SuppCard({ nav }) {
+  const S = useStore(s => s.S)
+  const today = todayISO()
+  const day = useSupp(s => s.days[today])
+  const pull = useSupp(s => s.pull)
+  const items = suppsOf(S)
+  useEffect(() => { if (items) pull(today, today) }, [!!items])
+  if (!items || suppUnseen(S)) return null         // the card above already says it
+  const { due, taken, status } = dayStatus(items, day, weekdayOf(today))
+  if (status === 'rest' || status === 'ok') return null
+  return <div className="card">
+    <div className="today-row" style={{ marginTop: 0 }} onClick={() => nav('/supps')}>
+      <div className="row" style={{ gap: 9, minWidth: 0 }}>
+        <span className="lrow-i" style={{ background: 'var(--teal)' }}><Icon name="capsule" /></span>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2">{t('Supplements')}</div>
+          <div className="ttl">{t('{0} of {1} doses', taken, due)}</div>
+        </div>
+      </div>
+      <span className="tag">{t('Tick')}</span>
+    </div>
+  </div>
+}
+
+// Admin side: what happened with the students since the trainer last looked.
+function TrainerCard({ nav }) {
+  const [d, setD] = useState(null)
+  useEffect(() => { fetchUnread().then(setD).catch(() => {}) }, [])
+  if (!d || !d.students) return null
+  return <div className="card" style={d.unread ? { borderColor: 'var(--acc)' } : null}>
+    <div className="today-row" style={{ marginTop: 0 }} onClick={() => nav('/trainer')}>
+      <div className="row" style={{ gap: 9, minWidth: 0 }}>
+        <span className="lrow-i" style={{ background: d.unread ? 'var(--acc)' : 'var(--indigo)' }}><Icon name="person" /></span>
+        <div style={{ minWidth: 0 }}>
+          <div className="lbl2">{t('Students')}</div>
+          <div className="ttl">{d.unread ? t(d.unread === 1 ? '{0} update from your students' : '{0} updates from your students', d.unread) : t(d.students === 1 ? '{0} student' : '{0} students', d.students)}</div>
+        </div>
+      </div>
+      {d.unread ? <span className="tag acc">{d.unread}</span> : <Icon name="chevronRight" className="chev" />}
+    </div>
+  </div>
+}
+
+// Today's food at a glance; tap through to the diary.
+function DietCard({ nav }) {
+  const S = useStore(s => s.S)
+  const today = todayISO()
+  const day = useDiet(s => s.days[today])
+  const pull = useDiet(s => s.pull)
+  useEffect(() => { pull(today, today) }, [])
+  const bw = lastBW(S)
+  const tgt = targetsOf(S, bw ? toKg(bw.w, S.unit) : 0, today)
+  if (!tgt && !day?.entries?.length) return null
+  return <DietSummary tot={sumEntries(day?.entries || [])} tgt={tgt} onClick={() => nav('/diet')} />
+}
+
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
   const nav = useNavigate()
@@ -46,7 +170,7 @@ export default function Home() {
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
   const [weekOffset, setWeekOffset] = useState(0)
-  const coachOn = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE })
+  const coachOn = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, locked: trainerLocked(S) })
 
   const today = new Date()
   const routine = effectiveRoutine(S, todayISO())
@@ -105,7 +229,13 @@ export default function Home() {
       </div>
     </div>
 
+    {user?.admin && !DEMO && !MOBILE && <TrainerCard nav={nav} />}
+    <TrainerPlanCard nav={nav} />
+    <TrainerDietCard nav={nav} />
+    <TrainerSuppsCard nav={nav} />
     {coachOn && <CoachCard nav={nav} />}
+    {dietAvailable(user, { demo: DEMO, mobile: MOBILE }) && <DietCard nav={nav} />}
+    {suppAvailable(user, { demo: DEMO, mobile: MOBILE }) && <SuppCard nav={nav} />}
 
     {!S.routines.length && !S.active && (
       <div className="card">

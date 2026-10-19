@@ -3,6 +3,9 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { dietAvailable } from '../lib/diet.js'
+import { DEMO } from '../lib/demo.js'
+import { MOBILE } from '../lib/mobile.js'
 import Icon from './Icon.jsx'
 
 export default function TabBar({ onStart }) {
@@ -13,7 +16,9 @@ export default function TabBar({ onStart }) {
   const isGuest = useStore(s => s.isGuest())
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
-  const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home')
+  const diet = dietAvailable(user, { demo: DEMO, mobile: MOBILE })
+  // With Diet in the last slot the library opens from Plan, so Plan is the tab it belongs to.
+  const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home') || (diet && cur === 'library' && k === 'plan')
 
   const startWorkout = () => {
     if (!S.active) {
@@ -37,7 +42,11 @@ export default function TabBar({ onStart }) {
         <span>{S.active ? t('Resume') : t('Start')}</span>
       </button>
       <Tab k="stats" icon="chart" to="/stats" label={t('Stats')} />
-      <Tab k="library" icon="list" to="/library" label={t('Exercises')} />
+      {/* With the food diary on, Diet takes the last slot; the exercise library stays one tap
+          away from the Plan header and from every exercise picker. */}
+      {diet
+        ? <Tab k="diet" icon="flame" to="/diet" label={t('Diet')} />
+        : <Tab k="library" icon="list" to="/library" label={t('Exercises')} />}
     </nav>
   )
 }

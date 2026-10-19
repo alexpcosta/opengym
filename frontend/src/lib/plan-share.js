@@ -17,7 +17,7 @@ const PLAN_FMT = 1
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]   // Mon-first, matching the Plan screen
 
 // Keep only the meaningful config fields, so the file stays small and readable.
-function cleanEx(e) {
+export function cleanEx(e) {
   const o = { id: e.id, sets: e.sets }
   const mode = modeOf(e)
   if (mode === 'cardio') {
@@ -94,6 +94,25 @@ export function parsePlan(raw) {
 }
 
 /**
+ * Bring a plan's custom exercises into draft state `s`: reuse one you already have with the
+ * same name + body part, else add it with a fresh id. Returns { planId: localId } so the
+ * plan's routines can be pointed at the local copies. Also used for a trainer's plan, where
+ * the same custom exercise arrives again on every update and must keep mapping to one entry.
+ */
+export function mergeCustomEx(s, list) {
+  s.customEx = s.customEx || []
+  const exIdMap = {}
+  ;(list || []).forEach(c => {
+    const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
+    if (same) { exIdMap[c.id] = same.id; return }
+    const nid = uid()
+    exIdMap[c.id] = nid
+    s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
+  })
+  return exIdMap
+}
+
+/**
  * Merge a parsed bundle into a draft state `s` (call inside store.update).
  *  - customs: reuse one you already have with the same name + body part, else add it fresh
  *  - routines: always added as NEW routines (fresh ids) — never overwrites yours
@@ -101,15 +120,7 @@ export function parsePlan(raw) {
  *    leaves empty become rest days — a half-overwritten week would silently mix two plans)
  */
 export function mergePlan(s, bundle, { schedule } = {}) {
-  s.customEx = s.customEx || []
-  const exIdMap = {}
-  bundle.customEx.forEach(c => {
-    const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
-    if (same) { exIdMap[c.id] = same.id; return }
-    const nid = uid()
-    exIdMap[c.id] = nid
-    s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
-  })
+  const exIdMap = mergeCustomEx(s, bundle.customEx)
   const ridMap = {}
   bundle.routines.forEach(r => {
     const nid = uid()

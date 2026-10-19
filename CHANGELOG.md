@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+### Trainer mode and the food diary
+
+openGym tracked one person's training. It can now be a personal trainer's tool: the instance's
+admins plan for everyone else, and see what they do. And it tracks what you eat, not only what
+you lift. **[Guide →](docs/TRAINER.md)**
+
+- 🧑‍🏫 **Plans written by your trainer.** An admin builds a student's week and routines with the
+  same editor as their own plan (or copies their own) and sends it. It lands on the student's
+  phone by itself, read-only there, with a note; routine ids survive edits, so history and
+  progression stay attached. The student can still move a single day.
+- 🔔 **The trainer hears about it.** Workout finished (with duration, sets, volume), a new PR,
+  a planned day skipped, no food logged, a day off target, and a daily summary — as pushes in
+  the trainer's own language and in a feed. Checks run on each student's own clock, and history
+  imports never flood anyone.
+- 🥗 **A food diary.** Meals with calories and macros against targets worked out from your goal
+  (Mifflin–St Jeor × activity, a capped deficit or surplus, protein by body weight — every step
+  shown). Search 593 basic foods offline in Portuguese and Spanish (TACO, NEPA/UNICAMP), packaged
+  foods and barcodes through Open Food Facts, your own foods, quick add, copy the previous day.
+  The barcode scanner works on iPhone too, with the decoder served by your own instance.
+- 📋 **Diets written by your trainer.** Targets from the calculator or typed in, an optional menu
+  per meal with alternatives for each food, and foods the trainer adds for everyone. The student
+  ticks off what they ate as planned, or swaps; the trainer reads the last 14 days meal by meal.
+- 💊 **Supplements written by your trainer.** A short list per student — name, the amount in
+  the trainer's own words ("5 g", "2 cápsulas"), the days, how many times a day, optionally a
+  time per dose and a note. The student gets a screen that ticks each dose off, with the last two
+  weeks as coloured squares; the trainer sees the same squares and hears about a day that went
+  unticked, or only half ticked, with the outstanding supplements named. A dose is a slot rather
+  than a clock time, so moving 20:00 to 21:00 never erases what was marked, and days the list
+  does not fall on are never counted as missed. No route, no mg/ml, no cycles: it is an adherence
+  list, and what a doctor prescribed stays with the doctor.
+- Diet replaces Exercises in the tab bar for signed-in profiles; the library is a tap away in the
+  Plan header. Guests, the Android app and the demo are unchanged.
+- Notification taps now open the screen they are about (this also fixes the Coach's link).
+
 ### The AI Coach
 
 openGym could always progress a plan. It could never *write* one, and it never looked at the

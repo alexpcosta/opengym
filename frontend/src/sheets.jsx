@@ -20,6 +20,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-sha
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC } from './lib/progression.js'
 import { MOBILE, shareExport } from './lib/mobile.js'
+import { isTrainerRoutine } from './lib/trainer.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -308,7 +309,9 @@ export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail
 
 /* ============================ add to routine ============================ */
 function AddToRoutine({ ex, close }) {
-  const st = useStore(s => s.S)
+  const full = useStore(s => s.S)
+  // A trainer's routines are read-only for the student — never a target for "add to plan".
+  const st = { ...full, routines: full.routines.filter(r => !isTrainerRoutine(full, r.id)) }
   const pick = rid => {
     close()
     const isNew = rid === '_new'
@@ -693,24 +696,45 @@ function DayAssign({ day, close }) {
 }
 export const dayAssignSheet = day => ui().openSheet(close => <DayAssign day={day} close={close} />)
 
+// The same choice over any list of routines — a trainer filling in a student's week.
+export const routineDaySheet = ({ day, routines, current, onPick }) => ui().openSheet(close => {
+  const set = v => { close(); onPick(v) }
+  return <>
+    <h3>{t(DAYN[day])}</h3>
+    <div className="list">
+      <div className="item" onClick={() => set('')}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="moon" /></span><div className="grow"><div className="tt">{t('Rest day')}</div></div>{!current && <Icon name="check" className="accent" />}</div>
+      {routines.map(r => <div key={r.id} className="item" onClick={() => set(r.id)}>
+        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+        <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
+        {current === r.id && <Icon name="check" className="accent" />}</div>)}
+    </div>
+  </>
+})
+
 /* ============================ workout detail ============================ */
-function WorkoutDetail({ w, close }) {
-  const st = useStore(s => s.S)
+// `owner` is set when the workout is someone else's — a trainer reading a student's history:
+// their unit, names for their own custom exercises, and no delete button.
+function WorkoutDetail({ w, close, owner }) {
+  const mine = useStore(s => s.S)
+  const unit = owner ? owner.unit : mine.unit
+  const effortLabel = s => s.rpe != null ? 'RPE ' + fmtNum(s.rpe) : s.rir != null ? 'RIR ' + s.rir : ''
   return <>
     <h3>{w.name}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(w.vol, st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(w.vol, unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + unit] : [])].join(' · ')}</div>
     {w.entries.map((e, i) => {
       const ex = EXIDX[e.id]
+      const name = ex ? ex.n : (owner?.customEx?.find(c => c.id === e.id)?.n || e.n || e.id)
       return <div key={i} className="row" style={{ marginBottom: 12, alignItems: 'flex-start' }}>
         {ex && <Thumb ex={ex} />}
-        <div className="grow"><div className="tt capitalize" style={{ fontWeight: 600 }}>{ex ? ex.n : (e.n || e.id)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
-          <div className="ss">{e.sets.filter(s => s.done).map(s => setLabel(e.id, s, e.target)).join('  ·  ') || t('no sets')}</div></div>
+        <div className="grow"><div className="tt capitalize" style={{ fontWeight: 600 }}>{name} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
+          <div className="ss">{e.sets.filter(s => s.done).map(s => setLabel(e.id, s, e.target) + (owner && effortLabel(s) ? ' (' + effortLabel(s) + ')' : '')).join('  ·  ') || t('no sets')}</div></div>
       </div>
     })}
-    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
+    {owner && w.note && <div className="card small" style={{ marginTop: 4 }}><Icon name="pencil" style={{ fontSize: 13, marginRight: 6 }} />{w.note}</div>}
+    {!owner && <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>}
   </>
 }
-export const workoutDetailSheet = w => ui().openSheet(close => <WorkoutDetail w={w} close={close} />)
+export const workoutDetailSheet = (w, owner) => ui().openSheet(close => <WorkoutDetail w={w} owner={owner} close={close} />)
 
 /* ============================ calendar ============================ */
 function Calendar({ start, close }) {
@@ -755,13 +779,14 @@ function Calendar({ start, close }) {
 export const calendarSheet = start => ui().openSheet(close => <Calendar start={start} close={close} />)
 
 /* shared small workout row (used in lists) */
-export function WorkoutRow({ w, onClick }) {
+// `unit` / `routines`: someone else's workout (a trainer reading a student's history).
+export function WorkoutRow({ w, onClick, unit, routines }) {
   const st = useStore(s => s.S)
-  const glyph = glyphOf((st.routines.find(r => r.id === w.routineId) || {}).emoji)
+  const glyph = glyphOf(((routines || st.routines).find(r => r.id === w.routineId) || {}).emoji)
   return <div className="item" onClick={onClick}>
     <span className="lrow-i" style={{ width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
     <div className="grow"><div className="tt">{w.name}</div>
-      <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), t('{0} sets', setsDone(w)), fmtVol(w.vol, st.unit)].join(' · ')}</div></div>
+      <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), t('{0} sets', setsDone(w)), fmtVol(w.vol, unit || st.unit)].join(' · ')}</div></div>
     {w.prs && w.prs.length > 0 && <span className="pr"><Icon name="trophy" />{w.prs.length} PR</span>}
     <Icon name="chevronRight" className="chev" />
   </div>

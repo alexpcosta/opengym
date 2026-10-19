@@ -90,6 +90,8 @@ as a home-screen app, passkey sign-in, offline support, sync across your phone a
 - 💪 **Muscle map** — a front-and-back body diagram shaded by how much work each muscle got, over a week, a month or all time. It names the muscles you *haven't* trained in that period, previews what a routine hits while you build it, and shows what you just trained when you finish. Male or female figure, your pick
 - 🔔 **Push notifications** — rest-timer alerts even with the app closed, plus an optional reminder on days you have a workout planned but haven't logged one. Opt in per profile; keys are generated on first run, nothing to configure
 - 🤖 **AI Coach** (optional) — an AI that *designs* your plan and adjusts it from what you actually log. A short intake produces a complete weekly plan you can refine in plain language; on demand or on a schedule it reads your stalls, effort ratings, adherence and body-weight trend and proposes **discrete, explained changes** you accept one by one. Choose the official Claude Agent SDK or the bundled OpenAI Codex CLI with ChatGPT device-code sign-in; it is off until the instance owner enables it, needs each profile's separate consent, and never changes anything without your approval — every change-set is snapshotted and revertible. The progression engine still owns your session-to-session weights. **[Full guide →](docs/AI_COACH.md)**
+- 🧑‍🏫 **Trainer mode** — the instance's admins write each student's training plan, diet and supplement list, see every workout, meal and ticked dose, and get notified when a student finishes a workout, sets a PR, skips a planned day, logs no food, ends a day off target or leaves a dose unticked — plus a daily summary. Plans, diets and supplements land on the student's phone on their own and stay locked there. **[Guide →](docs/TRAINER.md)**
+- 🥗 **Food diary** — log meals MyFitnessPal-style: calories and macros against targets calculated from your goal (Mifflin–St Jeor, with the reasoning shown), a bundled food table in Portuguese and Spanish (TACO, works offline), packaged foods and barcode scanning through Open Food Facts, your own foods, quick add and "copy yesterday"
 - 🔑 **Passkeys, not passwords** — Face ID / Touch ID / fingerprint login; each profile keeps its own data, synced across devices
 - 🛠️ **Admin dashboard** (optional) — for whoever runs the instance: who's training right now, per-user history, disable accounts, and invite-only signup. Off by default, so a fresh instance stays open with no admin
 - 🎨 **Designed, not assembled** — light/dark themes and 8 accent colors saved to your profile, over a hand-drawn icon set instead of emoji, so it looks the same on every phone
@@ -153,7 +155,10 @@ mobile app is the install-and-done flavor.
 ## Your data
 
 Lives in `./data` on your host: `db.json` (profiles + public passkeys), `state-<user>.json`
-(each user's plan, workouts, body weight, settings), and `secret` (the session-cookie key).
+(each user's plan, workouts, body weight, settings), `secret` (the session-cookie key), and —
+with trainer mode and the food diary — `trainer/` (plans, diets, supplement lists and the feed),
+`diet/` (each user's food diary by month), `supp/` (each user's ticked doses by month) and
+`food/` (the Open Food Facts cache).
 **Back up `./data` and you've backed up everything.** Passkey private keys never touch the
 server — they stay in your phone's secure hardware / your password manager.
 
@@ -170,6 +175,7 @@ All via `.env` (see `.env.example`):
 | `ADMIN_UIDS`  | User ids that get the admin dashboard (comma-separated) | *(none)*             |
 | `INVITE_ONLY` | Require an invite code to create a profile           | *(off)*                 |
 | `COACH_DISABLED` | Force the AI Coach off, whatever the admin dashboard says | *(unset)*        |
+| `OFF_CONTACT` | Contact sent to Open Food Facts in the User-Agent (food search) | `ORIGIN`       |
 
 Push notification keys are generated on first run and saved to `./data/vapid.json` — nothing to set.
 
@@ -205,7 +211,9 @@ stays a one-command `docker compose up`.
 The training logic — progression rules, 1RM estimation, how a logged session is read back —
 lives in pure functions under `frontend/src/lib/` with tests next to them: `npm test` in
 `frontend/`. Vitest is a dev dependency; the app itself ships no runtime dependencies beyond
-React, the router and Zustand.
+React, the router and Zustand — and, loaded only when the barcode scanner opens on a browser
+without a native one, `barcode-detector` with its zxing WebAssembly, served from your own instance.
+Food data: [TACO](docs/TRAINER.md#food-data) (NEPA/UNICAMP), bundled, and [Open Food Facts](https://world.openfoodfacts.org) (ODbL), through the server.
 
 ## Community
 

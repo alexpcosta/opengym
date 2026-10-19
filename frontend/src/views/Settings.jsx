@@ -12,6 +12,7 @@ import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, shareExport, syncReminder } from '../lib/mobile.js'
 import { loadStarterPlan, confirmSheet, importFromApp } from '../sheets.jsx'
 import { coachAvailable, hasConsent } from '../lib/coach.js'
+import { trainerLocked } from '../lib/trainer.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
@@ -89,6 +90,7 @@ export default function Settings() {
           onClick={() => window.open(REPO, '_blank', 'noopener')} />
       </> : user ? <>
         <Row icon="personCircle" iconTint="var(--grey)" title={user.name} subtitle={t('Signed in with passkey — data syncs to this profile.')} />
+        {user.admin && <Row icon="person" iconTint="var(--acc)" title={t('Students')} subtitle={t('Plans, workouts and notifications for your students.')} accessory="chevron" onClick={() => nav('/trainer')} />}
         {user.admin && <Row icon="wrench" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
         <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={() => confirmSheet({ title: t('Sign out?'), message: t('Your data is synced to your profile first, then cleared from this device.'), confirmText: t('Sign out'), danger: true, onConfirm: () => { signOut(); nav('/home') } })} />
         <Row icon="shield" iconTint="var(--red)" title={t('Sign out everywhere')} subtitle={t('Ends this profile’s sessions on all your devices.')} danger onClick={signOutEverywhere} />
@@ -143,7 +145,7 @@ export default function Settings() {
       </Row>
     </Section>
 
-    {coachAvailable(config, user, { demo: DEMO, mobile: MOBILE }) && (
+    {coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, locked: trainerLocked(S) }) && (
       <Section title={t('Coach')} footer={hasConsent(S)
         ? t('The Coach designs and adjusts your plan; it never changes anything without your say-so.')
         : t('An AI coach that can build your plan and adjust it from what you log. Off until you turn it on.')}>

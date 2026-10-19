@@ -13,6 +13,13 @@ import * as coachConfig from './coach/config.js';
 import * as coachJobs from './coach/jobs.js';
 import { coachRoutes } from './coach/routes.js';
 import { startCadence } from './coach/cadence.js';
+import { effectiveRoutineId, userNow } from './lib/schedule.js';
+import { createTrainer } from './trainer/routes.js';
+import { startDaily, addDailyCheck } from './trainer/daily.js';
+import { dietCheck } from './trainer/diet-checks.js';
+import { suppCheck } from './trainer/supp-checks.js';
+import { dietRoutes } from './diet/routes.js';
+import { suppRoutes } from './supp/routes.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -108,29 +115,6 @@ function cancelRestTimer(userId) {
 }
 
 // "Workout planned today" reminder — one per user per day, at their chosen time.
-// Duplicated (not imported) from frontend/src/lib/history.js effectiveRoutineId — tiny pure helper, not worth sharing across the two runtimes.
-function effectiveRoutineId(S, iso) {
-  const ov = S.dayPlan?.[iso];
-  if (ov === 'rest') return null;
-  if (ov && S.routines?.some(r => r.id === ov)) return ov;
-  const wd = new Date(iso + 'T12:00:00').getDay();
-  return S.week?.[wd] || null;
-}
-// Computes "now" in an arbitrary IANA zone (e.g. "Europe/Lisbon") instead of the server's own —
-// each user's reminder fires by their own clock, wherever they and their phone actually are.
-function userNow(tz) {
-  try {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: tz, hour12: false,
-      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-    }).formatToParts(new Date());
-    const g = t => parts.find(p => p.type === t)?.value;
-    const date = `${g('year')}-${g('month')}-${g('day')}`;
-    // Weekday is derived from the zone's own date, not the server's — a Sunday-evening review
-    // has to be Sunday where the user is, which is what the reminder already assumes for time.
-    return { date, hhmm: `${g('hour')}:${g('minute')}`, weekday: new Date(date + 'T12:00:00Z').getUTCDay() };
-  } catch { return null; } // unknown/invalid tz string — skip this user rather than guess
-}
 setInterval(() => {
   for (const user of db.users) {
     if (!db.subs.some(s => s.userId === user.id)) continue;
@@ -262,6 +246,11 @@ function livePresence(uid) {
   return p;
 }
 setInterval(() => { for (const [k, v] of presence) if (Date.now() - v.updatedAt > PRESENCE_TTL) presence.delete(k); }, 30000).unref();
+
+/* ---------- trainer mode ---------- */
+// Admins plan for students and hear about their workouts (trainer/routes.js). Handed the same
+// helpers as the Coach, for the same reason: no cycle back into this file.
+const trainer = createTrainer({ json, readBody, readSession, requireAdmin, readState, sendPush, isAdmin, getDb: () => db, saveDb });
 
 /* ---------- routes ---------- */
 const routes = {
@@ -405,8 +394,10 @@ const routes = {
     const body = await readBody(req);
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     delete body.state.active;              // in-progress workouts stay device-local
+    const prev = readState(user.id);       // read before the write: the trainer diffs against it
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
     json(res, 200, { ok: true, ts: body.state._ts || null });
+    try { trainer.onStateSaved(user, prev, body.state); } catch (e) { console.error('trainer notify', e); }
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),
@@ -562,7 +553,16 @@ const routes = {
   // Routes live in coach/routes.js and are handed the helpers above rather than importing
   // them: they are closures over db and SECRET, and passing them in keeps that module free of
   // a cycle. Every one of them is inert while the feature is unconfigured.
-  ...coachRoutes({ json, readBody, readSession, requireAdmin })
+  ...coachRoutes({ json, readBody, readSession, requireAdmin }),
+
+  /* ---------- trainer mode ---------- */
+  ...trainer.routes,
+
+  /* ---------- food search + food diary ---------- */
+  ...dietRoutes({ json, readBody, readSession }),
+
+  /* ---------- the student's supplement log ---------- */
+  ...suppRoutes({ json, readBody, readSession })
 };
 
 /* ---------- Coach: boot recovery, notifications, scheduled reviews ---------- */
@@ -581,6 +581,9 @@ coachJobs.setProposalHook((uid, pending) => {
   });
 });
 startCadence({ users: () => db.users, userNow });
+addDailyCheck(dietCheck);
+addDailyCheck(suppCheck);
+startDaily({ students: trainer.students, admins: trainer.admins, prefsOf: trainer.prefsOf, langOf: trainer.langOf, readState, sendPush, notifyAdmins: trainer.notifyAdmins });
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
