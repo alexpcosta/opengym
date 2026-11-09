@@ -9,11 +9,12 @@ import { beep, vibrate } from '../lib/sound.js'
 import { t } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
 import Media from '../components/Media.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeightSheet, finishWorkout, workoutCompleteSheet, confirmSheet } from '../sheets.jsx'
+import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { nextPrescription, applyPrescription } from '../lib/progression.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { warmupSets } from '../lib/warmups.js'
 
 /* ---------- start chooser (no active workout) ---------- */
 function StartChooser() {
@@ -54,7 +55,7 @@ function Elapsed({ start }) {
 }
 
 /* ---------- one exercise block (reps: weight×reps · time: a held duration · cardio: duration+speed) ---------- */
-function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemoveSet, onStartTimed }) {
+function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemoveSet, onStartTimed, onWarmup }) {
   const S = useStore(s => s.S)
   const working = useUI(s => s.work)
   const entry = S.active.entries[entryIdx]
@@ -63,8 +64,6 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
   const cardio = mode === 'cardio'
   const timed = mode === 'time'
   const last = lastEntryFor(S, entry.id)
-  // The same number the "confirm your working weight" sheet calls your best, so the two
-  // never disagree inside one session: heaviest logged set, or the working weight you kept.
   const best = cardio ? 0 : Math.max(bestWeightFor(S, entry.id), (S.exWeights[entry.id] || {}).w || 0)
   // What the progression policy decided for this session, and why (issue #17). Computed when
   // the session was built so the reason matches the numbers already in the rows.
@@ -81,21 +80,24 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
   const kind = effortOf(S)
   const eff = EFFORT[kind]
   const col3 = mode === 'reps' && eff ? { ...eff, eff: kind, dec: true, opt: true, hd: t(eff.hd) } : null
+  const warmups = mode === 'reps' && !entry.sets.some(s => s.done)
+    ? entry.warmups ?? warmupSets(entry.id, entry.sets[0]?.w, S.unit)
+    : null
   // The effort column walks its own scale — see stepEffort. Weight and reps step up from 0
   // with no ceiling, as they always did.
-  const bump = (s, i, col, dir) => {
-    if (col.eff) return onField(i, col.f, stepEffort(col.eff, s[col.f], dir))
-    onField(i, col.f, Math.max(0, Math.round(((s[col.f] || 0) + dir * col.step) * 100) / 100))
+  const bump = (s, col, dir, set) => {
+    if (col.eff) return set(stepEffort(col.eff, s[col.f], dir))
+    set(Math.max(0, Math.round(((s[col.f] || 0) + dir * col.step) * 100) / 100))
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
   // as every other +/- field in the app.
-  const cell = (s, i, col, cls) => (
+  const cell = (s, col, cls, set, label) => (
     <div className={'stp ' + cls}>
-      <button aria-label="Decrease" onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>
+      <button aria-label="Decrease" onClick={() => bump(s, col, -1, set)}><Icon name="minus" /></button>
       {/* a typed effort is capped — there is no RPE 12, and 12 reps in reserve is a warm-up */}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={s[col.f] ?? ''}
-        onChange={v => onField(i, col.f, col.eff ? capEffort(col.eff, v) : v)} /></span>
-      <button aria-label="Increase" onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>
+      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={s[col.f] ?? ''} aria-label={label}
+        onChange={v => set(col.eff ? capEffort(col.eff, v) : v)} /></span>
+      <button aria-label="Increase" onClick={() => bump(s, col, 1, set)}><Icon name="plus" /></button>
     </div>
   )
   return <>
@@ -115,14 +117,30 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' ? 'arrowDown' : 'lightbulb'} />
       <span>{t(...plan.why)}</span>
     </div>}
+    {warmups && <section className="card" aria-label={t('Warm-up sets')} style={{ marginTop: 10, marginBottom: 0 }}>
+      <h2>{t('Warm-up sets')}</h2>
+      {warmups.length ? <>
+        {!entry.warmups && !(entry.sets[0]?.w > 0) && <p className="small muted">
+          {t('Enter the first working weight below to suggest warm-up loads, or enter them here.')}
+        </p>}
+        <div className="sethead"><span className="n-sp" /><span className="w-sp">{col1.hd}</span><span className="r-sp">{col2.hd}</span><span className="ck-sp" /></div>
+        {warmups.map((s, i) => <div key={i} className={'setrow' + (s.done ? ' done' : '')}>
+          <div className="n">W{i + 1}</div>
+          {cell(s, { ...col1, opt: true }, 'w', w => onWarmup(i, 'w', w), t('Warm-up {0} weight ({1})', i + 1, S.unit))}
+          {cell(s, col2, 'r', r => onWarmup(i, 'r', r), t('Warm-up {0} reps', i + 1))}
+          <Check checked={s.done} label={t('Warm-up set {0} complete', i + 1)} onChange={done => onWarmup(i, 'done', done)} />
+        </div>)}
+      </> : <p className="small muted">{t('Use a lighter bar or warm up unloaded for this working weight.')}</p>}
+    </section>}
     <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
+      {warmups && <h2>{t('Working sets')}</h2>}
       {/* the header carries the same eff3 sizing as the rows, or the labels drift off their columns */}
       <div className={'sethead' + (col3 ? ' eff3' : '')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span><span className="r-sp">{col2.hd}</span>{col3 && <span className="eff-sp">{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
       {entry.sets.map((s, i) => <div key={i} className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '')}>
         <div className="n">{i + 1}</div>
-        {cell(s, i, col1, 'w')}
-        {cell(s, i, col2, 'r')}
-        {col3 && cell(s, i, col3, 'eff')}
+        {cell(s, col1, 'w', v => onField(i, col1.f, v))}
+        {cell(s, col2, 'r', v => onField(i, col2.f, v))}
+        {col3 && cell(s, col3, 'eff', v => onField(i, col3.f, v))}
         {/* A timed set is started, not typed: the timer counts the hold down and checks the
             set off itself. The checkbox stays for anyone who timed it on their own watch. */}
         {timed && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
@@ -160,7 +178,11 @@ function ActiveWorkout() {
   const setField = (idx, i, field, v) => mutEntry(idx, e => {
     if (v == null) delete e.sets[i][field]; else e.sets[i][field] = v
   })
-  const modeAt = idx => modeOf({ ...(A.entries[idx].target || {}), id: A.entries[idx].id })
+  const setWarmup = (idx, i, field, value) => mutEntry(idx, e => {
+    // Once the ramp is in use, keep edited and checked rows in the active workout.
+    e.warmups ??= warmupSets(e.id, e.sets[0]?.w, S.unit)
+    if (e.warmups?.[i]) e.warmups[i][field] = value
+  })
   const addSet = idx => mutEntry(idx, e => {
     const l = e.sets[e.sets.length - 1]
     const m = modeOf({ ...(e.target || {}), id: e.id })
@@ -183,30 +205,33 @@ function ActiveWorkout() {
   }
 
   const toggle = (idx, i) => {
-    const m = modeAt(idx)
-    const cardioEntry = m === 'cardio'
-    const isLastUnit = unitIdx >= units.length - 1
-    let askTop = false, exJustDone = false, workoutDone = false
-    mutEntry(idx, e => {
-      e.sets[i].done = !e.sets[i].done
-      if (e.sets[i].done) {
-        beep(S.sound, 1040, 0.12); vibrate(30)
-        const isLastExInUnit = idx === unit[unit.length - 1]
-        const unitDone = unit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
-        if (isLastExInUnit && !unitDone) startRest(S.restSec)
-        else if (unitDone) stopRest()
-        if (unitDone && isLastUnit) workoutDone = true      // last exercise's last set → done
-        // Only reps training has a "working weight" worth confirming — a bodyweight plank
-        // has nothing to put in that slider.
-        if (e.sets.every(x => x.done)) { exJustDone = true; if (m === 'reps' && !e.asked) { e.asked = true; askTop = true } }
+    let loggedMode, workoutDone = false
+    update(s => {
+      const active = s.active
+      const entry = active?.entries[idx]
+      const set = entry?.sets[i]
+      if (!set) return
+      set.done = !set.done
+      if (!set.done) return
+
+      beep(s.sound, 1040, 0.12); vibrate(30)
+      const mode = modeOf({ ...entry.target, id: entry.id })
+      if (entry.sets.every(x => x.done)) loggedMode = mode
+      const workoutUnits = supersetUnits(active.entries)
+      const currentUnit = unitOf(workoutUnits, idx)
+      const unitDone = currentUnit.every(j => active.entries[j].sets.every(x => x.done))
+      if (unitDone) {
+        stopRest()
+        const next = workoutUnits[workoutUnits.indexOf(currentUnit) + 1]
+        if (!next) workoutDone = true
+        else if (mode === 'reps' && currentUnit.includes(active.cur)) active.cur = next[0]
+      } else if (idx === currentUnit.at(-1)) {
+        startRest(s.restSec)
       }
     })
-    // reps: topWeight first (it chains into the finish/continue prompt on the last unit).
-    // cardio/timed or already-confirmed: go straight to the prompt.
-    if (askTop) topWeightSheet(idx)
-    else if (workoutDone) workoutCompleteSheet()
-    else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
-    else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
+    if (workoutDone) workoutCompleteSheet()
+    else if (loggedMode === 'cardio') useUI.getState().toast(t('Cardio logged'))
+    else if (loggedMode === 'time') useUI.getState().toast(t('Hold logged'))
   }
 
   // Live-presence heartbeat so the admin dashboard can show who's training now. Signed-in only —
@@ -252,11 +277,13 @@ function ActiveWorkout() {
           {unit.map((idx, k) => <div key={idx} className="ss-ex">
             {k > 0 && <div className="ss-amp">+</div>}
             <ExerciseBlock entryIdx={idx} compact
-              onToggle={i => toggle(idx, i)} onField={(i, f, v) => setField(idx, i, f, v)} onAddSet={() => addSet(idx)} onRemoveSet={() => removeSet(idx)} onStartTimed={i => startTimed(idx, i)} />
+              onToggle={i => toggle(idx, i)} onField={(i, f, v) => setField(idx, i, f, v)} onAddSet={() => addSet(idx)} onRemoveSet={() => removeSet(idx)} onStartTimed={i => startTimed(idx, i)}
+              onWarmup={(i, f, v) => setWarmup(idx, i, f, v)} />
           </div>)}
         </div>
       ) : (
-        <ExerciseBlock entryIdx={cur} onToggle={i => toggle(cur, i)} onField={(i, f, v) => setField(cur, i, f, v)} onAddSet={() => addSet(cur)} onRemoveSet={() => removeSet(cur)} onStartTimed={i => startTimed(cur, i)} />
+        <ExerciseBlock entryIdx={cur} onToggle={i => toggle(cur, i)} onField={(i, f, v) => setField(cur, i, f, v)} onAddSet={() => addSet(cur)} onRemoveSet={() => removeSet(cur)} onStartTimed={i => startTimed(cur, i)}
+          onWarmup={(i, f, v) => setWarmup(cur, i, f, v)} />
       )}
     </> : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout — add your first exercise.')}</div>}
 
